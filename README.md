@@ -1,8 +1,3 @@
-# Jmeter
-
-Link script: https://shbonline.sharepoint.com/:x:/s/SHB-NHS-TEST/ER7i0KAOZjREuRi-1BYN3JsBeYqJATpVoMtHlvYw7ohETQ
-
-
 ## Getting started
 
 To make it easy for you to get started with GitLab, here's a list of recommended next steps.
