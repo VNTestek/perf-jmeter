@@ -44,6 +44,6 @@ echo "===== Generate HTML Report ====="
 echo "=====================END OF TESTING ==============================================="
 sleep 30
 
-sleep 180
+sleep 10
 
 #./bin/jmeter -Jjmeter.save.saveservice.output_format=xml -Jjmeter.save.saveservice.response_data=true -Jjmeter.save.saveservice.samplerData=true -Jjmeter.save.saveservice.requestHeaders=true -J jmeter.save.saveservice.responseHeaders=true -Jjmeter.save.saveservice.url=true -n -t jmx/20241021_ESB_Transfer.jmx -l res/${resPath}/result.jtl  -e -o res/${resPath} -DUSERS=${ccu} -DRAMP=${ramp} -DSTEP=${steps} -DDURA=${duration} -DORG=Automation_Test -DBUCKET=SAHA -DRUNID=POD1_1024_ESB
