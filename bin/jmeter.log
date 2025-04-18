@@ -1,0 +1,212 @@
+2024-08-27 21:26:52,837 INFO o.a.j.u.JMeterUtils: Setting Locale to en_EN
+2024-08-27 21:26:52,859 INFO o.a.j.JMeter: Loading user properties from: user.properties
+2024-08-27 21:26:52,860 INFO o.a.j.JMeter: Loading system properties from: system.properties
+2024-08-27 21:26:52,860 INFO o.a.j.JMeter: Setting System property: USER=1
+2024-08-27 21:26:52,860 INFO o.a.j.JMeter: Setting System property: RAMUP=2
+2024-08-27 21:26:52,860 INFO o.a.j.JMeter: Setting System property: STEP=1
+2024-08-27 21:26:52,860 INFO o.a.j.JMeter: Setting System property: DURA=1
+2024-08-27 21:26:52,864 INFO o.a.j.JMeter: Copyright (c) 1998-2023 The Apache Software Foundation
+2024-08-27 21:26:52,865 INFO o.a.j.JMeter: Version 5.6.2
+2024-08-27 21:26:52,865 INFO o.a.j.JMeter: java.version=17.0.10
+2024-08-27 21:26:52,865 INFO o.a.j.JMeter: java.vm.name=Java HotSpot(TM) 64-Bit Server VM
+2024-08-27 21:26:52,865 INFO o.a.j.JMeter: os.name=Mac OS X
+2024-08-27 21:26:52,865 INFO o.a.j.JMeter: os.arch=aarch64
+2024-08-27 21:26:52,865 INFO o.a.j.JMeter: os.version=14.0
+2024-08-27 21:26:52,865 INFO o.a.j.JMeter: file.encoding=UTF-8
+2024-08-27 21:26:52,865 INFO o.a.j.JMeter: java.awt.headless=true
+2024-08-27 21:26:52,865 INFO o.a.j.JMeter: Max memory     =1073741824
+2024-08-27 21:26:52,865 INFO o.a.j.JMeter: Available Processors =8
+2024-08-27 21:26:52,872 INFO o.a.j.JMeter: Default Locale=English (EN)
+2024-08-27 21:26:52,872 INFO o.a.j.JMeter: JMeter  Locale=English (EN)
+2024-08-27 21:26:52,872 INFO o.a.j.JMeter: JMeterHome=/Users/vincent/Training/performance/jmeter-5.6.2
+2024-08-27 21:26:52,872 INFO o.a.j.JMeter: user.dir  =/Users/vincent/Training/performance/jmeter-5.6.2/bin
+2024-08-27 21:26:52,872 INFO o.a.j.JMeter: PWD       =/Users/vincent/Training/performance/jmeter-5.6.2/bin
+2024-08-27 21:26:52,873 INFO o.a.j.JMeter: IP: 127.0.0.1 Name: Vincent-MP.local FullName: localhost
+2024-08-27 21:26:52,881 INFO o.a.j.JMeter: Setting property 'jmeter.reportgenerator.outputdir' to:'/Users/vincent/Downloads/test'
+2024-08-27 21:26:52,884 INFO o.a.j.s.FileServer: Default base='/Users/vincent/Training/performance/jmeter-5.6.2/bin'
+2024-08-27 21:26:52,885 INFO o.a.j.s.FileServer: Set new base='/Users/vincent/Desktop'
+2024-08-27 21:26:53,027 INFO o.a.j.s.SaveService: Testplan (JMX) version: 2.2. Testlog (JTL) version: 2.2
+2024-08-27 21:26:53,048 INFO o.a.j.s.SaveService: Using SaveService properties version 5.0
+2024-08-27 21:26:53,051 INFO o.a.j.s.SaveService: Using SaveService properties file encoding UTF-8
+2024-08-27 21:26:53,053 INFO o.a.j.s.SaveService: Loading file: /Users/vincent/Desktop/01.Demo.jmx
+2024-08-27 21:26:53,126 INFO o.a.j.s.SampleResult: Note: Sample TimeStamps are START times
+2024-08-27 21:26:53,126 INFO o.a.j.s.SampleResult: sampleresult.default.encoding is set to UTF-8
+2024-08-27 21:26:53,126 INFO o.a.j.s.SampleResult: sampleresult.useNanoTime=true
+2024-08-27 21:26:53,126 INFO o.a.j.s.SampleResult: sampleresult.nanoThreadSleep=5000
+2024-08-27 21:26:53,136 INFO o.a.j.JMeter: Creating summariser <summary>
+2024-08-27 21:26:53,139 INFO o.a.j.r.d.ReportGenerator: ReportGenerator will use for Parsing the separator: ','
+2024-08-27 21:26:53,139 INFO o.a.j.r.d.ReportGenerator: Will generate report at end of test from  results file: result/test093.jtl
+2024-08-27 21:26:53,139 INFO o.a.j.r.d.ReportGenerator: Reading report generator properties from: /Users/vincent/Training/performance/jmeter-5.6.2/bin/reportgenerator.properties
+2024-08-27 21:26:53,140 INFO o.a.j.r.d.ReportGenerator: Merging with JMeter properties
+2024-08-27 21:26:53,143 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.temp_dir' not found, using default value 'temp' instead.
+2024-08-27 21:26:53,145 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.apdex_per_transaction' not found, using default value 'null' instead.
+2024-08-27 21:26:53,148 INFO o.a.j.r.c.ReportGeneratorConfiguration: apdex_per_transaction is empty, not APDEX per transaction customization
+2024-08-27 21:26:53,148 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.sample_filter' not found, using default value 'null' instead.
+2024-08-27 21:26:53,148 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.report_title' not found, using default value 'null' instead.
+2024-08-27 21:26:53,148 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.start_date' not found, using default value 'null' instead.
+2024-08-27 21:26:53,148 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.end_date' not found, using default value 'null' instead.
+2024-08-27 21:26:53,148 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.date_format' not found, using default value 'null' instead.
+2024-08-27 21:26:53,149 INFO o.a.j.r.c.ReportGeneratorConfiguration: Will use date range start date: null, end date: null
+2024-08-27 21:26:53,151 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.totalTPS.exclude_controllers' not found, using default value 'false' instead.
+2024-08-27 21:26:53,151 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.activeThreadsOverTime.exclude_controllers' not found, using default value 'false' instead.
+2024-08-27 21:26:53,152 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.timeVsThreads.exclude_controllers' not found, using default value 'false' instead.
+2024-08-27 21:26:53,152 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimeDistribution.exclude_controllers' not found, using default value 'false' instead.
+2024-08-27 21:26:53,152 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.transactionsPerSecond.exclude_controllers' not found, using default value 'false' instead.
+2024-08-27 21:26:53,152 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimePercentiles.exclude_controllers' not found, using default value 'false' instead.
+2024-08-27 21:26:53,152 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimePercentilesOverTime.exclude_controllers' not found, using default value 'false' instead.
+2024-08-27 21:26:53,152 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimesOverTime.exclude_controllers' not found, using default value 'false' instead.
+2024-08-27 21:26:53,152 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.connectTimeOverTime.exclude_controllers' not found, using default value 'false' instead.
+2024-08-27 21:26:53,152 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.latenciesOverTime.exclude_controllers' not found, using default value 'false' instead.
+2024-08-27 21:26:53,153 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.json.filters_only_sample_series' not found, using default value 'true' instead.
+2024-08-27 21:26:53,153 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.json.series_filter' not found, using default value '' instead.
+2024-08-27 21:26:53,153 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.json.show_controllers_only' not found, using default value 'false' instead.
+2024-08-27 21:26:53,154 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.html.filters_only_sample_series' not found, using default value 'true' instead.
+2024-08-27 21:26:53,154 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.html.series_filter' not found, using default value '' instead.
+2024-08-27 21:26:53,154 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.html.show_controllers_only' not found, using default value 'false' instead.
+2024-08-27 21:26:53,164 INFO o.a.j.e.StandardJMeterEngine: Running the test!
+2024-08-27 21:26:53,164 INFO o.a.j.s.SampleEvent: List of sample_variables: []
+2024-08-27 21:26:53,164 INFO o.a.j.s.SampleEvent: List of sample_variables: []
+2024-08-27 21:26:53,168 INFO o.a.j.e.u.CompoundVariable: Note: Function class names must contain the string: '.functions.'
+2024-08-27 21:26:53,168 INFO o.a.j.e.u.CompoundVariable: Note: Function class names must not contain the string: '.gui.'
+2024-08-27 21:26:53,206 INFO o.a.j.r.ClassFinder: Will scan jar /Users/vincent/Training/performance/jmeter-5.6.2/lib/ext/jmeter-plugins-casutg-2.10.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2024-08-27 21:26:53,212 INFO o.a.j.r.ClassFinder: Will scan jar /Users/vincent/Training/performance/jmeter-5.6.2/lib/ext/jmeter-plugins-manager-1.10.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2024-08-27 21:26:53,265 INFO o.a.j.r.ClassFinder: Will scan jar /Users/vincent/Training/performance/jmeter-5.6.2/lib/ext/jmeter-plugins-filterresults-2.2.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2024-08-27 21:26:53,268 INFO o.a.j.r.ClassFinder: Will scan jar /Users/vincent/Training/performance/jmeter-5.6.2/lib/ext/jmeter-plugins-synthesis-2.2.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2024-08-27 21:26:53,269 INFO o.a.j.r.ClassFinder: Will scan jar /Users/vincent/Training/performance/jmeter-5.6.2/lib/ext/jmeter-debugger-0.6.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2024-08-27 21:26:53,277 INFO o.a.j.r.ClassFinder: Will scan jar /Users/vincent/Training/performance/jmeter-5.6.2/lib/ext/jmeter-plugins-cmd-2.2.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2024-08-27 21:26:53,278 INFO o.a.j.r.ClassFinder: Will scan jar /Users/vincent/Training/performance/jmeter-5.6.2/lib/ext/jmeter-plugins-tst-2.6.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2024-08-27 21:26:53,280 INFO o.a.j.r.ClassFinder: Will scan jar /Users/vincent/Training/performance/jmeter-5.6.2/lib/ext/jmeter-plugins-influxdb2-listener-2.1.9.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2024-08-27 21:26:53,824 INFO o.a.j.r.ClassFinder: Will scan jar /Users/vincent/Training/performance/jmeter-5.6.2/lib/ext/jmeter-parallel-0.12.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2024-08-27 21:26:53,828 INFO o.a.j.r.ClassFinder: Will scan jar /Users/vincent/Training/performance/jmeter-5.6.2/lib/ext/jmeter-plugins-functions-2.2.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2024-08-27 21:26:53,831 INFO o.a.j.r.ClassFinder: Will scan jar /Users/vincent/Training/performance/jmeter-5.6.2/lib/ext/jmeter-plugins-graphs-basic-2.0.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2024-08-27 21:26:53,832 INFO o.a.j.r.ClassFinder: Will scan jar /Users/vincent/Training/performance/jmeter-5.6.2/lib/ext/jmeter-plugins-fifo-0.2.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2024-08-27 21:26:53,835 INFO o.a.j.r.ClassFinder: Will scan jar /Users/vincent/Training/performance/jmeter-5.6.2/lib/ext/jmeter-plugins-graphs-additional-2.0.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2024-08-27 21:26:53,836 INFO o.a.j.r.ClassFinder: Will scan jar /Users/vincent/Training/performance/jmeter-5.6.2/lib/ext/jmeter-plugins-json-2.7.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2024-08-27 21:26:53,838 INFO o.a.j.r.ClassFinder: Will scan jar /Users/vincent/Training/performance/jmeter-5.6.2/lib/ext/jmeter-plugins-dummy-0.4.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2024-08-27 21:26:53,839 INFO o.a.j.r.ClassFinder: Will scan jar /Users/vincent/Training/performance/jmeter-5.6.2/lib/ext/jmeter-plugins-perfmon-2.1.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2024-08-27 21:26:53,993 INFO o.a.j.v.b.BackendListener: Backend Listener: Starting worker with class: class io.vincent.influxdb2.visualizer.InfluxDatabaseBackendListenerClient and queue capacity: 5000
+2024-08-27 21:26:53,995 INFO o.a.j.v.b.BackendListener: Backend Listener: Started  worker with class: class io.vincent.influxdb2.visualizer.InfluxDatabaseBackendListenerClient
+2024-08-27 21:26:53,996 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: ** This library was customized by Vincent (+84 832868822) **
+2024-08-27 21:26:53,996 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: New instance of InfluxDatabaseClient has been created!
+2024-08-27 21:26:53,996 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: InfluxDBClientFactory is going to use the following properties:
+2024-08-27 21:26:53,996 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: URL --> http://localhost:8086
+2024-08-27 21:26:53,996 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Token --> vK78sS2JgUiVfPH6fHAUEYmIktaAh4_gIdP6N4LECcI2c3_Cjyq65URtRdre19VZp8-Z5YA7wsi1qoMw6A3QEA==
+2024-08-27 21:26:53,996 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Organization --> Vincent
+2024-08-27 21:26:53,996 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Bucket --> Testek
+2024-08-27 21:26:54,132 INFO o.a.j.JMeter: Running test (1724768814132)
+2024-08-27 21:26:54,146 INFO o.a.j.e.StandardJMeterEngine: Starting ThreadGroup: 1 : 01.Demo
+2024-08-27 21:26:54,147 INFO o.a.j.e.StandardJMeterEngine: Starting 1 threads for group 01.Demo.
+2024-08-27 21:26:54,147 INFO o.a.j.e.StandardJMeterEngine: Thread will continue on error
+2024-08-27 21:26:54,148 INFO o.a.j.e.StandardJMeterEngine: All thread groups have been started
+2024-08-27 21:26:54,148 INFO c.b.j.t.c.ConcurrencyThreadStarter: Start supplying threads
+2024-08-27 21:26:54,151 INFO o.a.j.t.JMeterThread: Thread started: 01.Demo-ThreadStarter 1-1
+2024-08-27 21:26:58,181 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 10, elapsed time is --> 47 ms
+2024-08-27 21:27:01,869 INFO o.a.j.r.Summariser: summary +     10 in 00:00:08 =    1.3/s Avg:   627 Min:   110 Max:  3022 Err:     0 (0.00%) Active: 1 Started: 1 Finished: 0
+2024-08-27 21:27:02,150 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 13 ms
+2024-08-27 21:27:06,153 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 15 ms
+2024-08-27 21:27:10,153 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 10, elapsed time is --> 11 ms
+2024-08-27 21:27:14,158 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 7, elapsed time is --> 11 ms
+2024-08-27 21:27:18,161 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 11 ms
+2024-08-27 21:27:22,167 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 13 ms
+2024-08-27 21:27:26,169 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 11, elapsed time is --> 12 ms
+2024-08-27 21:27:30,111 INFO o.a.j.r.Summariser: summary +     35 in 00:00:28 =    1.2/s Avg:   732 Min:    60 Max:  2940 Err:     0 (0.00%) Active: 1 Started: 1 Finished: 0
+2024-08-27 21:27:30,111 INFO o.a.j.r.Summariser: summary =     45 in 00:00:36 =    1.3/s Avg:   709 Min:    60 Max:  3022 Err:     0 (0.00%)
+2024-08-27 21:27:30,173 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 8, elapsed time is --> 11 ms
+2024-08-27 21:27:34,178 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 10, elapsed time is --> 11 ms
+2024-08-27 21:27:38,179 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 11, elapsed time is --> 14 ms
+2024-08-27 21:27:42,174 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 7, elapsed time is --> 8 ms
+2024-08-27 21:27:46,183 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 13 ms
+2024-08-27 21:27:50,183 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 12, elapsed time is --> 12 ms
+2024-08-27 21:27:54,185 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 12 ms
+2024-08-27 21:27:58,187 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 14 ms
+2024-08-27 21:28:00,111 INFO o.a.j.r.Summariser: summary +     40 in 00:00:30 =    1.3/s Avg:   687 Min:    83 Max:  3349 Err:     0 (0.00%) Active: 1 Started: 1 Finished: 0
+2024-08-27 21:28:00,112 INFO o.a.j.r.Summariser: summary =     85 in 00:01:06 =    1.3/s Avg:   699 Min:    60 Max:  3349 Err:     0 (0.00%)
+2024-08-27 21:28:02,189 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 15 ms
+2024-08-27 21:28:06,191 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 11, elapsed time is --> 12 ms
+2024-08-27 21:28:10,197 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 14 ms
+2024-08-27 21:28:14,200 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 10, elapsed time is --> 14 ms
+2024-08-27 21:28:18,204 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 7, elapsed time is --> 9 ms
+2024-08-27 21:28:22,212 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 14 ms
+2024-08-27 21:28:26,212 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 8, elapsed time is --> 13 ms
+2024-08-27 21:28:30,208 INFO o.a.j.r.Summariser: summary +     42 in 00:00:30 =    1.4/s Avg:   658 Min:    56 Max:  3270 Err:     0 (0.00%) Active: 1 Started: 1 Finished: 0
+2024-08-27 21:28:30,209 INFO o.a.j.r.Summariser: summary =    127 in 00:01:36 =    1.3/s Avg:   685 Min:    56 Max:  3349 Err:     0 (0.00%)
+2024-08-27 21:28:30,216 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 11, elapsed time is --> 12 ms
+2024-08-27 21:28:34,219 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 10, elapsed time is --> 12 ms
+2024-08-27 21:28:38,222 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 13 ms
+2024-08-27 21:28:42,226 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 10, elapsed time is --> 12 ms
+2024-08-27 21:28:46,232 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 10, elapsed time is --> 13 ms
+2024-08-27 21:28:50,239 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 15 ms
+2024-08-27 21:28:54,241 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 12 ms
+2024-08-27 21:28:58,245 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 10, elapsed time is --> 11 ms
+2024-08-27 21:29:00,277 INFO o.a.j.r.Summariser: summary +     43 in 00:00:30 =    1.4/s Avg:   632 Min:    69 Max:  3190 Err:     0 (0.00%) Active: 1 Started: 1 Finished: 0
+2024-08-27 21:29:00,278 INFO o.a.j.r.Summariser: summary =    170 in 00:02:06 =    1.3/s Avg:   672 Min:    56 Max:  3349 Err:     0 (0.00%)
+2024-08-27 21:29:02,248 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 13, elapsed time is --> 9 ms
+2024-08-27 21:29:06,255 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 14 ms
+2024-08-27 21:29:10,255 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 8, elapsed time is --> 10 ms
+2024-08-27 21:29:14,263 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 10, elapsed time is --> 14 ms
+2024-08-27 21:29:18,263 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 13 ms
+2024-08-27 21:29:22,268 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 13 ms
+2024-08-27 21:29:26,268 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 9 ms
+2024-08-27 21:29:30,181 INFO o.a.j.r.Summariser: summary +     40 in 00:00:30 =    1.3/s Avg:   700 Min:    65 Max:  3503 Err:     0 (0.00%) Active: 1 Started: 1 Finished: 0
+2024-08-27 21:29:30,182 INFO o.a.j.r.Summariser: summary =    210 in 00:02:36 =    1.3/s Avg:   677 Min:    56 Max:  3503 Err:     0 (0.00%)
+2024-08-27 21:29:30,273 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 10, elapsed time is --> 10 ms
+2024-08-27 21:29:34,277 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 11, elapsed time is --> 12 ms
+2024-08-27 21:29:38,280 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 11, elapsed time is --> 13 ms
+2024-08-27 21:29:42,284 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 13 ms
+2024-08-27 21:29:46,291 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 15 ms
+2024-08-27 21:29:50,290 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 9, elapsed time is --> 10 ms
+2024-08-27 21:29:54,292 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 10, elapsed time is --> 10 ms
+2024-08-27 21:29:54,765 INFO c.b.j.t.c.ConcurrencyThreadStarter: Done supplying threads
+2024-08-27 21:29:54,888 INFO o.a.j.t.JMeterThread: Thread is done: 01.Demo-ThreadStarter 1-1
+2024-08-27 21:29:54,888 INFO o.a.j.t.JMeterThread: Thread finished: 01.Demo-ThreadStarter 1-1
+2024-08-27 21:29:54,889 INFO o.a.j.e.StandardJMeterEngine: Notifying test listeners of end of test
+2024-08-27 21:29:54,893 INFO o.a.j.v.b.BackendListener: Worker ended
+2024-08-27 21:29:54,893 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Shutting down influxDB scheduler...
+2024-08-27 21:29:54,894 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: influxDB scheduler terminated!
+2024-08-27 21:29:54,894 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: The final step ---> importing before closing.
+2024-08-27 21:29:54,903 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Data has been imported successfully, batch with size is --> 4, elapsed time is --> 9 ms
+2024-08-27 21:29:54,907 INFO i.v.i.v.InfluxDatabaseBackendListenerClient: Instance of InfluxDatabaseClient has been refreshed!
+2024-08-27 21:29:54,908 INFO o.a.j.r.Summariser: summary +     37 in 00:00:25 =    1.5/s Avg:   627 Min:    60 Max:  2877 Err:     0 (0.00%) Active: 0 Started: 1 Finished: 1
+2024-08-27 21:29:54,908 INFO o.a.j.r.Summariser: summary =    247 in 00:03:01 =    1.4/s Avg:   669 Min:    56 Max:  3503 Err:     0 (0.00%)
+2024-08-27 21:29:54,908 INFO o.a.j.JMeter: Generating Dashboard
+2024-08-27 21:29:54,909 INFO o.a.j.r.d.ReportGenerator: Flushing result collector before report Generation
+2024-08-27 21:29:54,915 INFO o.a.j.r.p.NormalizerSampleConsumer: Using format, 'ms', to parse timeStamp field
+2024-08-27 21:29:54,955 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.AggregateConsumer#stopProducing(): beginDate produced 0 samples
+2024-08-27 21:29:54,955 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.AggregateConsumer#stopProducing(): endDate produced 0 samples
+2024-08-27 21:29:54,955 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.ApdexSummaryConsumer#stopProducing(): apdexSummary produced 0 samples
+2024-08-27 21:29:54,955 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.RequestsSummaryConsumer#stopProducing(): requestsSummary produced 0 samples
+2024-08-27 21:29:54,957 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.StatisticsSummaryConsumer#stopProducing(): statisticsSummary produced 0 samples
+2024-08-27 21:29:54,958 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.Top5ErrorsBySamplerConsumer#stopProducing(): top5ErrorsBySampler produced 0 samples
+2024-08-27 21:29:54,958 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.ErrorsSummaryConsumer#stopProducing(): errorsSummary produced 0 samples
+2024-08-27 21:29:54,958 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.HitsPerSecondGraphConsumer#stopProducing(): hitsPerSecond produced 0 samples
+2024-08-27 21:29:54,965 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.LatencyVSRequestGraphConsumer#stopProducing(): latencyVsRequest produced 0 samples
+2024-08-27 21:29:54,965 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.SyntheticResponseTimeDistributionGraphConsumer#stopProducing(): syntheticResponseTimeDistribution produced 0 samples
+2024-08-27 21:29:54,966 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.BytesThroughputGraphConsumer#stopProducing(): bytesThroughputOverTime produced 0 samples
+2024-08-27 21:29:54,966 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.CodesPerSecondGraphConsumer#stopProducing(): codesPerSecond produced 0 samples
+2024-08-27 21:29:54,969 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimeVSRequestGraphConsumer#stopProducing(): responseTimeVsRequest produced 0 samples
+2024-08-27 21:29:54,969 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.FilterConsumer#stopProducing(): startIntervalControlerFilter produced 1729 samples
+2024-08-27 21:29:54,969 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.TotalTPSGraphConsumer#stopProducing(): totalTPS produced 0 samples
+2024-08-27 21:29:54,969 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ActiveThreadsGraphConsumer#stopProducing(): activeThreadsOverTime produced 0 samples
+2024-08-27 21:29:54,969 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.TimeVSThreadGraphConsumer#stopProducing(): timeVsThreads produced 0 samples
+2024-08-27 21:29:54,969 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimeDistributionGraphConsumer#stopProducing(): responseTimeDistribution produced 0 samples
+2024-08-27 21:29:54,969 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.TransactionsPerSecondGraphConsumer#stopProducing(): transactionsPerSecond produced 0 samples
+2024-08-27 21:29:54,970 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimePercentilesGraphConsumer#stopProducing(): responseTimePercentiles produced 0 samples
+2024-08-27 21:29:54,971 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimePercentilesOverTimeGraphConsumer#stopProducing(): responseTimePercentilesOverTime produced 0 samples
+2024-08-27 21:29:54,971 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimeOverTimeGraphConsumer#stopProducing(): responseTimesOverTime produced 0 samples
+2024-08-27 21:29:54,972 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ConnectTimeOverTimeGraphConsumer#stopProducing(): connectTimeOverTime produced 0 samples
+2024-08-27 21:29:54,972 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.LatencyOverTimeGraphConsumer#stopProducing(): latenciesOverTime produced 0 samples
+2024-08-27 21:29:54,972 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.FilterConsumer#stopProducing(): nameFilter produced 3705 samples
+2024-08-27 21:29:54,972 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.FilterConsumer#stopProducing(): dateRangeFilter produced 741 samples
+2024-08-27 21:29:54,972 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.NormalizerSampleConsumer#stopProducing(): normalizer produced 247 samples
+2024-08-27 21:29:54,972 INFO o.a.j.r.p.CsvFileSampleSource: produce(): 247 samples produced in 46ms on channel 0
+2024-08-27 21:29:54,972 INFO o.a.j.r.d.ReportGenerator: Exporting data using exporter:'json' of className:'org.apache.jmeter.report.dashboard.JsonExporter'
+2024-08-27 21:29:55,061 INFO o.a.j.r.d.JsonExporter: Found data for consumer statisticsSummary in context
+2024-08-27 21:29:55,061 INFO o.a.j.r.d.JsonExporter: Creating statistics for overall
+2024-08-27 21:29:55,062 INFO o.a.j.r.d.JsonExporter: Creating statistics for other transactions
+2024-08-27 21:29:55,062 INFO o.a.j.r.d.JsonExporter: Checking output folder
+2024-08-27 21:29:55,062 INFO o.a.j.r.d.JsonExporter: Writing statistics JSON to /Users/vincent/Downloads/test/statistics.json
+2024-08-27 21:29:55,088 INFO o.a.j.r.d.ReportGenerator: Exporting data using exporter:'html' of className:'org.apache.jmeter.report.dashboard.HtmlTemplateExporter'
+2024-08-27 21:29:55,090 INFO o.a.j.r.d.HtmlTemplateExporter: Will generate dashboard in folder: /Users/vincent/Downloads/test
+2024-08-27 21:29:55,152 INFO o.a.j.r.d.HtmlTemplateExporter: Report will be generated in: /Users/vincent/Downloads/test, creating folder structure
+2024-08-27 21:29:55,153 INFO o.a.j.r.d.TemplateVisitor: Copying folder from '/Users/vincent/Training/performance/jmeter-5.6.2/bin/report-template' to '/Users/vincent/Downloads/test', got message: /Users/vincent/Downloads/test, found non empty folder with following content [/Users/vincent/Downloads/test/statistics.json], will be ignored
+2024-08-27 21:29:55,371 INFO o.a.j.JMeter: Dashboard generated
