@@ -295,10 +295,10 @@
         <stringProp name="TargetLevel">${__P(USER,10)}</stringProp>
         <stringProp name="RampUp">${__P(RAMUP,1)}</stringProp>
         <stringProp name="Steps">${__P(STEP,5)}</stringProp>
-        <stringProp name="Hold">${__P(DURA,1)}</stringProp>
+        <stringProp name="Hold">${__P(DURA,15)}</stringProp>
         <stringProp name="LogFilename"></stringProp>
         <stringProp name="Iterations"></stringProp>
-        <stringProp name="Unit">M</stringProp>
+        <stringProp name="Unit">S</stringProp>
       </com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroup>
       <hashTree>
         <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Login Controller" enabled="true"/>

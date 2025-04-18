@@ -14,6 +14,7 @@ ccu=$4
 ramp=$5
 steps=$6
 duration=$7
+worker=$8
 
 # for influxDB: 192.168.90.34
 influxToken=GRTrHcIIG5QYoAaV-S7n_NoZB_SPGVStS6SLRicAlbWpBtd4Lfr_h94obOUjAheAxnhp5cPVNvyYgw9ndUQDgg==
@@ -21,7 +22,14 @@ influxOrg=Vincent
 influxBucket=PERF-SAHA
 
 currentDate=$(date +'%Y%m%d_%H%M%S')
-resPath=${currentDate}_${scenario}_${ccu}C${ramp}R${steps}S${duration}D
+if [ -z "$worker" ] || [ "$worker" = "null" ]; then
+    # Trường hợp worker rỗng
+    resPath="${currentDate}_${scenario}_${ccu}C${ramp}R${steps}S${duration}D"
+else
+    # Trường hợp worker có giá trị
+    resPath="${currentDate}_${scenario}_${ccu}C${ramp}R${steps}S${duration}D_${worker}"
+fi
+#resPath=${currentDate}_${scenario}_${ccu}C${ramp}R${steps}S${duration}D
 reportPath="res/${resFol}/${resPath}"
 echo "=================================================================================="
 echo " Test Scenario:  ${scenario}    Execution Time:  ${currentDate}"
@@ -44,6 +52,6 @@ echo "===== Generate HTML Report ====="
 echo "=====================END OF TESTING ==============================================="
 sleep 30
 
-sleep 180
+sleep 10
 
 #./bin/jmeter -Jjmeter.save.saveservice.output_format=xml -Jjmeter.save.saveservice.response_data=true -Jjmeter.save.saveservice.samplerData=true -Jjmeter.save.saveservice.requestHeaders=true -J jmeter.save.saveservice.responseHeaders=true -Jjmeter.save.saveservice.url=true -n -t jmx/20241021_ESB_Transfer.jmx -l res/${resPath}/result.jtl  -e -o res/${resPath} -DUSERS=${ccu} -DRAMP=${ramp} -DSTEP=${steps} -DDURA=${duration} -DORG=Automation_Test -DBUCKET=SAHA -DRUNID=POD1_1024_ESB
