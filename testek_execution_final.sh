@@ -37,5 +37,3 @@ fi
 
 #./execution.sh [JMX File Name] [Testing Type] [EXE DATE] [CCU] [RAMP-UP] [STEPS] [DURATION]
 ./execution.sh 20250328_CompareDB_Postgres SAHA_DBCompare_Postgres ${executionDate} 1 ${rampUp} 1 ${duration} ${influxToken} ${influxOrg} ${influxBucket}
-
-./deployment/generateReport/generateRawReportScript.sh ${executionDate} ${savedReport}

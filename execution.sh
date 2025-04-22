@@ -7,6 +7,7 @@ if [ "$#" -lt 5 ]; then
   exit 1
 fi
 
+# Configuration
 jmx=$1
 scenario=$2
 resFol=$3
@@ -14,12 +15,10 @@ ccu=$4
 ramp=$5
 steps=$6
 duration=$7
-worker=$8
-
-# for influxDB: 192.168.90.34
-influxToken=GRTrHcIIG5QYoAaV-S7n_NoZB_SPGVStS6SLRicAlbWpBtd4Lfr_h94obOUjAheAxnhp5cPVNvyYgw9ndUQDgg==
-influxOrg=Vincent
-influxBucket=PERF-SAHA
+influxToken=$8
+influxOrg=$9
+influxBucket=${10}
+worker=${11}
 
 currentDate=$(date +'%Y%m%d_%H%M%S')
 if [ -z "$worker" ] || [ "$worker" = "null" ]; then
