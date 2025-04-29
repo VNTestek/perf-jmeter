@@ -1,0 +1,345 @@
+pipeline {
+    agent none
+
+    parameters {
+        choice(
+            name: 'SELECTED_NODES',
+            choices: ['Master'],
+            description: 'Chọn node để thực thi test hiệu năng (mặc định bao gồm tất cả các node khả dụng)'
+        )
+        string(
+            name: 'BUILD_TIMESTAMP',
+            defaultValue: "${new Date().format('yyyyMMdd_HHmmss')}",
+            description: 'Execution Date (format: yyyyMMdd_HHmmss)'
+        )
+        string(
+            name: 'EXECUTION_COMMANDS',
+            defaultValue: './execution.sh 20250418_Execution_Script_Demo Testek_Demo {ExecutionDate} 1 1 1 1 ',
+            description: 'Command to execute performance test'
+        )
+        // Các tham số mới cho thực thi đồng bộ
+        booleanParam(
+            name: 'USE_SYNCHRONIZED_EXECUTION',
+            defaultValue: true,
+            description: 'Sử dụng thực thi đồng bộ trên tất cả worker'
+        )
+        string(
+            name: 'DEFAULT_COMMAND_TIMEOUT',
+            defaultValue: '1200',
+            description: 'Thời gian timeout mặc định cho mỗi lệnh (giây)'
+        )
+        string(
+            name: 'MAX_SYNC_WAIT_TIME',
+            defaultValue: '300',
+            description: 'Thời gian tối đa chờ đồng bộ giữa các worker (giây)'
+        )
+         string(
+            name: 'AUTH_KEY',
+            defaultValue: 'VGVzdGVrX0REX1BlcmZvcm1hbmNlVGVzdA==',
+            description: 'The key to authenticate the API server'
+        )
+        string(
+            name: 'EMAIL_RECIPIENTS',
+            defaultValue: 'info@testek.edu.vn',
+            description: 'List of email recipients (comma-separated)'
+        )
+        string(
+            name: 'RESULT_STORAGE_DIR',
+            defaultValue: '/home/vincent/ws/perf/report',
+            description: 'Disk - storage directory for test results'
+        )
+    }
+
+    environment {
+        TIMESTAMP = "${params.BUILD_TIMESTAMP}"
+        RESULT_STORAGE_DIR = "${params.RESULT_STORAGE_DIR}"
+        RESULT_DIR = "res/${TIMESTAMP}"
+        MERGED_DIR = "res/${TIMESTAMP}/merged-res"
+        RESULT_DIR_FULL = ""
+        TEST_DIR_NAME = ""
+        SMTP_CREDENTIALS = credentials('gmail-smtp-credentials')
+        SOURCE_CODE_PACKAGE = "source-code-${TIMESTAMP}.tar.gz"
+        API_SERVER="http://192.168.90.34:8089"
+        MAX_WAIT_TIME= "${params.MAX_SYNC_WAIT_TIME}"
+        DEFAULT_COMMAND_TIMEOUT = "${params.DEFAULT_COMMAND_TIMEOUT}"
+        AUTH_KEY = "${params.AUTH_KEY}"
+        EXECUTION_COMMANDS = "${params.EXECUTION_COMMANDS}"
+    }
+
+    stages {
+        stage('Validate Parameters') {
+            agent {
+                label 'Master'
+            }
+            steps {
+                script {
+                    // Check if the required parameters are provided
+                    if (!params.BUILD_TIMESTAMP?.trim()) {
+                        def now = new Date()
+                        env.TIMESTAMP = now.format('yyyyMMdd_HHmmss')
+                        echo "BUILD_TIMESTAMP không được cung cấp, sử dụng giá trị mới: ${env.TIMESTAMP}"
+                    }
+                    sh "mkdir -p ${env.RESULT_DIR}"
+                    // Print workspace path
+                    echo "Workspace path: ${env.WORKSPACE}"
+                }
+            }
+        }
+
+        stage('Prepare Commands') {
+            agent {
+                label 'Master'
+            }
+            when {
+                expression { return params.USE_SYNCHRONIZED_EXECUTION }
+            }
+            steps {
+                script {
+                    // Verify the file path
+                    if (params.COMMANDS_SOURCE == 'FILE_PATH') {
+                        if (!fileExists(params.COMMANDS_FILE_PATH)) {
+                            error "File lệnh không tồn tại: ${params.COMMANDS_FILE_PATH}"
+                        }
+                    }
+
+                    // Cấp quyền thực thi
+                    sh "chmod +x execution-commands.sh"
+                    sh "chmod +x sync-worker-execution.sh"
+
+                    // Stash các file để sử dụng trên các worker
+                    stash includes: 'execution-commands.sh,sync-worker-execution.sh', name: 'sync-scripts'
+                }
+            }
+        }
+
+        stage('Performance Test') {
+            steps {
+                script {
+                    def selectedNodes = params.SELECTED_NODES.split(',')
+                    def parallelStages = [:]
+
+                    for (nodeName in selectedNodes) {
+                        def currentNode = nodeName.trim()
+
+                        parallelStages[currentNode] = {
+                            node(currentNode) {
+                                try {
+                                    // Unstash sync scripts if needed
+                                    if (params.USE_SYNCHRONIZED_EXECUTION) {
+                                        unstash 'sync-scripts'
+                                    }
+                                    // Execute performance test
+                                    runPerformanceTest(currentNode, params.EXECUTION_COMMANDS, env.RESULT_DIR)
+
+                                    // Stash results for merging later
+                                    stash includes: "${env.RESULT_DIR}/**", name: "${currentNode.toLowerCase().replaceAll(/\s+/, '-')}-results"
+                                } catch (Exception e) {
+                                    echo "Lỗi khi thực thi test hiệu năng trên ${currentNode}: ${e.getMessage()}"
+                                    currentBuild.result = 'FAILURE'
+                                    error "Thực thi test hiệu năng thất bại: ${e.getMessage()}"
+                                }
+                            }
+                        }
+                    }
+                    parallel parallelStages
+                }
+            }
+        }
+        stage('Merge Results') {
+            agent {
+                label 'Master'
+            }
+            steps {
+                script {
+                    try {
+                        echo "Merging results from all workers..."
+
+                        // Unstash results from all selected nodes
+                        def selectedNodes = params.SELECTED_NODES.split(',')
+                        for (nodeName in selectedNodes) {
+                            def currentNode = nodeName.trim()
+                            if (currentNode != 'Master') {  // Master's results are already available
+                                unstash "${currentNode.toLowerCase().replaceAll(/\s+/, '-')}-results"
+                            }
+                        }
+
+                        // Find JTL files from all workers
+                        def jtlFiles = sh(
+                            script: "find ${env.RESULT_DIR} -name '*.jtl' | sort",
+                            returnStdout: true
+                        ).trim()
+
+                        if (jtlFiles) {
+                            echo "Found JTL files to merge:"
+                            echo jtlFiles
+
+                            // Create directory for merged results
+                            sh "mkdir -p ${env.MERGED_DIR}"
+
+                            // Prepare JTL file names for merging
+                            def jtlIndex = 1
+                            def jtlProperties = new StringBuilder()
+                            jtlFiles.split('\n').each { jtlFile ->
+                                jtlProperties.append("inputJtl${jtlIndex}=${jtlFile}\n")
+                                jtlIndex++
+                            }
+                            writeFile file: "${env.MERGED_DIR}/merged-result.properties", text: jtlProperties.toString()
+
+                            // Create merged JTL file
+                            def mergedJtlFile = "${env.MERGED_DIR}/merged-results.jtl"
+
+                            // Merge JTL files
+                            sh """
+                                # Merge JTL files using JMeter Plugins
+                                java -jar lib/cmdrunner-2.3.jar --tool Reporter --generate-csv "${mergedJtlFile}" --input-jtl "${env.MERGED_DIR}/merged-result.properties" --plugin-type MergeResults
+                                mv merged-results.jtl ${env.MERGED_DIR}/
+                                # Generate HTML report from merged JTL
+                                ./bin/jmeter -g "${mergedJtlFile}" -o "${env.MERGED_DIR}/html" -Jjmeter.reportgenerator.overall_granularity=1000 -Jjmeter.reportgenerator.apdex_satisfied_threshold=500 -Jjmeter.reportgenerator.apdex_tolerated_threshold=1500
+                            """
+
+                            // Archive merged results
+                            archiveArtifacts artifacts: "${env.RESULT_DIR}/**", fingerprint: true
+
+                            // Move all file  and sub folder of  RESULT_DIR to RESULT_STORAGE_DIR\TIMESTAMP
+                            def directory = "${env.RESULT_STORAGE_DIR}/${env.TIMESTAMP}"
+                            echo "Moving all files and subfolders from ${env.RESULT_DIR} to ${directory}"
+                            sh """
+                                mkdir -p ${directory}/ && mv ${env.WORKSPACE}/${env.RESULT_DIR}/* ${directory}/
+                            """
+
+                            //Publish html file for each worker and merged result from RESULT_STORAGE_DIR
+                            def findCommand = "find ${directory} -path '*/html/index.html' || echo ''"
+                            def result = sh(script: findCommand, returnStdout: true).trim()
+
+                            // Convert result to list
+                            def files = []
+                            if (result && result != '') {
+                                files = result.split('\n')
+                                echo "Have ${files.size()} file HTML as:"
+                                files.each { file ->
+                                    echo "\tFile : ${file}"
+                                }
+                            } else {
+                                echo "Không tìm thấy file HTML nào trong thư mục ${directory}"
+                            }
+
+                            try {
+                                // Group files by directory
+                                def reportsByDir = [:]
+
+                                files.each { filePath ->
+                                    def dir = sh(script: "dirname ${filePath}", returnStdout: true).trim()
+                                    def fileName = sh(script: "basename ${filePath}", returnStdout: true).trim()
+
+                                    if (!reportsByDir.containsKey(dir)) {
+                                        reportsByDir[dir] = []
+                                    }
+                                    reportsByDir[dir] << fileName
+                                }
+
+                                // Export reports by directory
+                                reportsByDir.each { dir, fileList ->
+                                    def htmlDir = dir  // Folder containing index.html
+                                    def parentDir = sh(script: "dirname ${htmlDir}", returnStdout: true).trim()
+                                    def testDirName = sh(script: "basename ${parentDir}", returnStdout: true).trim()
+
+                                    // Save to environment variable for use in later stages
+                                    env.TEST_DIR_NAME = testDirName
+                                    env.RESULT_DIR_FULL =  dir
+
+                                    // Display index.html file if available
+                                    if (fileList.contains('index.html')) {
+                                        publishHTML([
+                                            allowMissing: false,
+                                            alwaysLinkToLastBuild: true,
+                                            keepAll: true,
+                                            reportDir: dir,
+                                            reportFiles: 'index.html',
+                                            reportName: "PT_Report_${testDirName}",
+                                            reportTitles: "PT_Report_${testDirName}"
+                                        ])
+                                    } else {
+                                        //TODO
+                                    }
+                                }
+                            } catch (Exception e) {
+                                echo "Lỗi khi xuất bản báo cáo HTML: ${e.getMessage()}"
+                            }
+
+                            // Extract test directory name for email
+                            env.TEST_DIR_NAME = sh(
+                                script: "basename \$(find ${env.RESULT_DIR} -path '*/html' | head -1 | xargs dirname)",
+                                returnStdout: true
+                            ).trim()
+                        } else {
+                            echo "No JTL files found to merge"
+                        }
+                    } catch (Exception e) {
+                        echo "Error merging results: ${e.getMessage()}"
+                    }
+                }
+            }
+        }
+        // Các stage còn lại của pipeline...
+    }
+
+    // Post section...
+}
+
+// Hàm thực thi performance test
+def runPerformanceTest(String workerName, String command, String resultDir) {
+    echo "Pull source to ${workerName}"
+
+    // checkout([
+    //     $class: 'GitSCM',
+    //     branches: [[name: "*/main"]],
+    //     doGenerateSubmoduleConfigurations: false,
+    //     extensions: [],
+    //     submoduleCfg: [],
+    //     userRemoteConfigs: [[
+    //         credentialsId: '3606cff0-4458-4295-89f3-2e03af248f90',
+    //         url: 'https://github.com/VNTestek/perf-jmeter.git'
+    //     ]]
+    // ])
+
+    try {
+        // Create result directory and coordination directory
+        sh """
+            mkdir -p ${resultDir}
+            mkdir -p coordination/${params.BUILD_TIMESTAMP}
+        """
+
+        if (params.USE_SYNCHRONIZED_EXECUTION) {
+            // Thực thi đồng bộ
+            echo "Sử dụng thực thi đồng bộ với các worker khác"
+
+            // Cấp quyền thực thi
+            sh """
+                chmod +x bin/jmeter || true
+                chmod +x sync-worker-command-execution.sh
+            """
+
+            // Thực thi script đồng bộ
+            sh """
+                ./sync-worker-command-execution.sh '${command}' '${resultDir}' '${env.DEFAULT_COMMAND_TIMEOUT}' '${workerName}' '${TIMESTAMP}' '${env.API_SERVER}' '${env.MAX_WAIT_TIME}' '${env.AUTH_KEY}'
+            """
+        } else {
+            // Thực thi riêng biệt (chế độ cũ)
+            echo "Sử dụng thực thi riêng biệt trên worker: ${workerName}"
+
+            sh """
+                # Grant permission to execute
+                chmod +x bin/jmeter || true
+                chmod +x ${params.TEST_EXECUTION_FILE}
+
+                # Execute performance test
+                ./${params.TEST_EXECUTION_FILE} "${params.TEST_PLAN}" "Testek_Test_Jenkins" "${params.BUILD_TIMESTAMP}" ${params.USERS} ${params.RAMP_UP} ${params.STEP} ${params.DURATION} ${workerName}
+            """
+        }
+
+        echo "Completed test execution on: ${workerName}"
+    } catch (Exception e) {
+        echo "Lỗi khi thực thi test hiệu năng trên ${workerName}: ${e.getMessage()}"
+        throw e
+    }
+}

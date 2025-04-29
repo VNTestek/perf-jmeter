@@ -1,0 +1,515 @@
+pipeline {
+    agent none
+
+    parameters {
+        choice(
+            name: 'SELECTED_NODES',
+            choices: ['Master'],
+            description: 'Chọn node để thực thi test hiệu năng (mặc định bao gồm tất cả các node khả dụng)'
+        )
+
+        string(
+            name: 'BUILD_TIMESTAMP',
+            defaultValue: "${new Date().format('yyyyMMdd_HHmmss')}",
+            description: 'Execution Date (format: yyyyMMdd_HHmmss)'
+        )
+        string(
+            name: 'TEST_PLAN',
+            defaultValue: '20241016_Login_Dashboard',
+            description: 'Your test script (without jmx) (Optional)\n1. Login:20241016_Login_Dashboard\n2. Transfer SameBank:20241016_Transfer_SameBank \n'
+        )
+        string(
+            name: 'TESTING_FUNCTIONS',
+            defaultValue: 'Load_Login',
+            description: 'Your testing functions, form: [TestType]_[TestName]'
+        )
+        string(
+            name: 'USERS',
+            defaultValue: '10',
+            description: 'Virtual User'
+        )
+        string(
+            name: 'RAMP_UP',
+            defaultValue: '4',
+            description: 'Ramp-up Time (minutes)'
+        )
+        string(
+            name: 'STEP',
+            defaultValue: '10',
+            description: 'Step Count'
+        )
+         string(
+            name: 'DURATION',
+            defaultValue: '10',
+            description: 'Duration - Hold Time (minutes)'
+        )
+        string(
+            name: 'EMAIL_RECIPIENTS',
+            defaultValue: 'info@testek.edu.vn',
+            description: 'List of email recipients (comma-separated)'
+        )
+
+        string(
+            name: 'RESULT_STORAGE_DIR',
+            defaultValue: '/home/vincent/ws/perf/report',
+            description: 'Disk - storage directory for test results'
+        )
+    }
+
+    environment {
+        TIMESTAMP = "${params.BUILD_TIMESTAMP}"
+        RESULT_STORAGE_DIR = "${params.RESULT_STORAGE_DIR}"
+        TESTING_FUNCTIONS = "${params.TESTING_FUNCTIONS}"
+        RESULT_DIR = "res/${TIMESTAMP}"
+        MERGED_DIR = "res/${TIMESTAMP}/merged-res"
+        RESULT_DIR_FULL = ""
+        TEST_DIR_NAME = ""
+        SMTP_CREDENTIALS = credentials('gmail-smtp-credentials')
+        SOURCE_CODE_PACKAGE = "source-code-${TIMESTAMP}.tar.gz"
+    }
+
+    stages {
+        stage('Validate Parameters') {
+            agent {
+                label 'Master'
+            }
+            steps {
+                script {
+                    // Check if the required parameters are provided
+                    if (!params.BUILD_TIMESTAMP?.trim()) {
+                        def now = new Date()
+                        env.TIMESTAMP = now.format('yyyyMMdd_HHmmss')
+                        echo "BUILD_TIMESTAMP không được cung cấp, sử dụng giá trị mới: ${env.TIMESTAMP}"
+                    }
+                    sh "mkdir -p ${env.RESULT_DIR}"
+                    // Print workspace path
+                    echo "Workspace path: ${env.WORKSPACE}"
+                }
+            }
+        }
+
+        stage('Performance Test') {
+            steps {
+                script {
+                    def selectedNodes = params.SELECTED_NODES.split(',')
+                    def parallelStages = [:]
+
+                    for (nodeName in selectedNodes) {
+                        def currentNode = nodeName.trim()
+
+                        parallelStages[currentNode] = {
+                            node(currentNode) {
+                                try {
+                                    // Execute performance test
+                                    runPerformanceTest(currentNode, env.RESULT_DIR)
+
+                                    // Stash results for merging later
+                                    stash includes: "${env.RESULT_DIR}/**", name: "${currentNode.toLowerCase().replaceAll(/\s+/, '-')}-results"
+                                } catch (Exception e) {
+                                    echo "Lỗi khi thực thi test hiệu năng trên ${currentNode}: ${e.getMessage()}"
+                                    currentBuild.result = 'FAILURE'
+                                    error "Thực thi test hiệu năng thất bại: ${e.getMessage()}"
+                                }
+                            }
+                        }
+                    }
+
+                    parallel parallelStages
+                }
+            }
+        }
+
+        stage('Merge Results') {
+            agent {
+                label 'Master'
+            }
+            steps {
+                script {
+                    try {
+                        echo "Merging results from all workers..."
+
+                        // Unstash results from all selected nodes
+                        def selectedNodes = params.SELECTED_NODES.split(',')
+                        for (nodeName in selectedNodes) {
+                            def currentNode = nodeName.trim()
+                            if (currentNode != 'Master') {  // Master's results are already available
+                                unstash "${currentNode.toLowerCase().replaceAll(/\s+/, '-')}-results"
+                            }
+                        }
+
+                        // Find JTL files from all workers
+                        def jtlFiles = sh(
+                            script: "find ${env.RESULT_DIR} -name '*.jtl' | sort",
+                            returnStdout: true
+                        ).trim()
+
+                        if (jtlFiles) {
+                            echo "Found JTL files to merge:"
+                            echo jtlFiles
+
+                            // Create directory for merged results
+                            sh "mkdir -p ${env.MERGED_DIR}"
+
+                            // Prepare JTL file names for merging
+                            def jtlIndex = 1
+                            def jtlProperties = new StringBuilder()
+                            jtlFiles.split('\n').each { jtlFile ->
+                                jtlProperties.append("inputJtl${jtlIndex}=${jtlFile}\n")
+                                jtlIndex++
+                            }
+                            writeFile file: "${env.MERGED_DIR}/merged-result.properties", text: jtlProperties.toString()
+
+
+                            // Merge JTL files using JMeter command line tools
+                            // First check if the JMeter Plugins CMD tool exists
+                            // def jmPMExists = sh(
+                            //     script: "test -f lib/ext/jmeter-plugins-manager.jar && echo 'true' || echo 'false'",
+                            //     returnStdout: true
+                            // ).trim()
+
+                            // if (jmPMExists == 'false') {
+                            //     echo "JMeter Plugins Manager not found, downloading..."
+                            //     sh """
+                            //         mkdir -p lib/ext
+                            //         curl -L https://jmeter-plugins.org/get/ -o lib/ext/jmeter-plugins-manager.jar
+                            //         java -cp lib/ext/jmeter-plugins-manager.jar org.jmeterplugins.repository.PluginManagerCMDInstaller
+                            //         chmod +x bin/PluginsManagerCMD.sh
+                            //         ./bin/PluginsManagerCMD.sh install jpgc-mergeresults
+                            //     """
+                            // }
+
+                            // Create merged JTL file
+                            def mergedJtlFile = "${env.MERGED_DIR}/merged-results.jtl"
+
+                            // Merge JTL files
+                            sh """
+                                # Merge JTL files using JMeter Plugins
+                                java -jar lib/cmdrunner-2.3.jar --tool Reporter --generate-csv "${mergedJtlFile}" --input-jtl "${env.MERGED_DIR}/merged-result.properties" --plugin-type MergeResults
+                                mv merged-results.jtl ${env.MERGED_DIR}/
+                                # Generate HTML report from merged JTL
+                                ./bin/jmeter -g "${mergedJtlFile}" -o "${env.MERGED_DIR}/html" -Jjmeter.reportgenerator.overall_granularity=1000 -Jjmeter.reportgenerator.apdex_satisfied_threshold=500 -Jjmeter.reportgenerator.apdex_tolerated_threshold=1500
+                            """
+
+                            // Archive merged results
+                            archiveArtifacts artifacts: "${env.RESULT_DIR}/**", fingerprint: true
+
+                            // Move all file  and sub folder of  RESULT_DIR to RESULT_STORAGE_DIR\TIMESTAMP
+                            def directory = "${env.RESULT_STORAGE_DIR}/${env.TIMESTAMP}"
+                            echo "Moving all files and subfolders from ${env.RESULT_DIR} to ${directory}"
+                            sh """
+                                mkdir -p ${directory}/ && mv ${env.WORKSPACE}/${env.RESULT_DIR}/* ${directory}/
+                            """
+
+
+
+                            //Publish html file for each worker and merged result from RESULT_STORAGE_DIR
+                            def findCommand = "find ${directory} -path '*/html/index.html' || echo ''"
+                            def result = sh(script: findCommand, returnStdout: true).trim()
+
+                            // Convert result to list
+                            def files = []
+                            if (result && result != '') {
+                                files = result.split('\n')
+                                echo "Have ${files.size()} file HTML as:"
+                                files.each { file ->
+                                    echo "\tFile : ${file}"
+                                }
+                            } else {
+                                echo "Không tìm thấy file HTML nào trong thư mục ${directory}"
+                            }
+
+                            try {
+                                // Group files by directory
+                                def reportsByDir = [:]
+
+                                files.each { filePath ->
+                                    def dir = sh(script: "dirname ${filePath}", returnStdout: true).trim()
+                                    def fileName = sh(script: "basename ${filePath}", returnStdout: true).trim()
+
+                                    if (!reportsByDir.containsKey(dir)) {
+                                        reportsByDir[dir] = []
+                                    }
+                                    reportsByDir[dir] << fileName
+                                }
+
+                                // Export reports by directory
+                                reportsByDir.each { dir, fileList ->
+                                    def htmlDir = dir  // Folder containing index.html
+                                    def parentDir = sh(script: "dirname ${htmlDir}", returnStdout: true).trim()
+                                    def testDirName = sh(script: "basename ${parentDir}", returnStdout: true).trim()
+
+                                    // Save to environment variable for use in later stages
+                                    env.TEST_DIR_NAME = testDirName
+                                    env.RESULT_DIR_FULL =  dir
+
+                                    // Display index.html file if available
+                                    if (fileList.contains('index.html')) {
+                                        publishHTML([
+                                            allowMissing: false,
+                                            alwaysLinkToLastBuild: true,
+                                            keepAll: true,
+                                            reportDir: dir,
+                                            reportFiles: 'index.html',
+                                            reportName: "PT_Report_${testDirName}",
+                                            reportTitles: "PT_Report_${testDirName}"
+                                        ])
+                                    } else {
+                                        //TODO
+                                    }
+
+                                    // Phân tích tên thư mục test để trích xuất thông tin chi tiết
+                                    // try {
+                                    //     def matcher = testDirName =~ /(\d{8})_(\d{6})_.*_(\d+)C(\d+)R(\d+)S(\d+)D/
+                                    //     if (matcher.matches()) {
+                                    //         def date = matcher.group(1)
+                                    //         def time = matcher.group(2)
+                                    //         def users = matcher.group(3)
+                                    //         def rampup = matcher.group(4)
+                                    //         def step = matcher.group(5)
+                                    //         def duration = matcher.group(6)
+
+                                    //         echo "Test Configuration:"
+                                    //         echo "- Date: ${date}"
+                                    //         echo "- Time: ${time}"
+                                    //         echo "- Users: ${users}"
+                                    //         echo "- Ramp-up: ${rampup}"
+                                    //         echo "- Step: ${step}"
+                                    //         echo "- Duration: ${duration}"
+                                    //     }
+                                    // } catch (Exception e) {
+                                    //     echo "Không thể phân tích chi tiết từ tên thư mục: ${e.getMessage()}"
+                                    // }
+                                }
+                            } catch (Exception e) {
+                                echo "Lỗi khi xuất bản báo cáo HTML: ${e.getMessage()}"
+                            }
+
+                            // Extract test directory name for email
+                            env.TEST_DIR_NAME = sh(
+                                script: "basename \$(find ${env.RESULT_DIR} -path '*/html' | head -1 | xargs dirname)",
+                                returnStdout: true
+                            ).trim()
+                        } else {
+                            echo "No JTL files found to merge"
+                        }
+                    } catch (Exception e) {
+                        echo "Error merging results: ${e.getMessage()}"
+                    }
+                }
+            }
+        }
+
+        // stage('Email Report') {
+        //     when {
+        //         expression { return env.TEST_DIR_NAME?.trim() }
+        //     }
+        //     agent {
+        //         label 'Master'
+        //     }
+        //     steps {
+        //         script {
+        //             try {
+        //                 // Tạo file báo cáo tổng hợp
+        //                 sh """
+        //                     echo "Performance Test Summary" > email-report.html
+        //                     echo "<p>Test Parameters:</p>" >> email-report.html
+        //                     echo "<ul>" >> email-report.html
+        //                     echo "<li>Test Plan: ${params.TEST_PLAN}</li>" >> email-report.html
+        //                     echo "<li>Users: ${params.USERS}</li>" >> email-report.html
+        //                     echo "<li>Duration: ${params.DURATION} seconds</li>" >> email-report.html
+        //                     echo "<li>Ramp-up: ${params.RAMP_UP} seconds</li>" >> email-report.html
+        //                     echo "<li>Step: ${params.STEP}</li>" >> email-report.html
+        //                     echo "<li>Execution Date: ${env.TIMESTAMP}</li>" >> email-report.html
+        //                     echo "<li>Test Result Directory: ${env.TEST_DIR_NAME}</li>" >> email-report.html
+        //                     echo "</ul>" >> email-report.html
+
+        //                     echo "<h2>Test Results</h2>" >> email-report.html
+        //                     echo "<p>Xem báo cáo chi tiết tại: ${BUILD_URL}</p>" >> email-report.html
+        //                 """
+
+        //                 // Gửi email
+        //                 emailext(
+        //                     subject: "Performance Test Report - ${params.TEST_PLAN} - ${env.TEST_DIR_NAME}",
+        //                     body: '''${FILE, path="email-report.html"}
+        //                           <p>Chi tiết xem tại: ${BUILD_URL}</p>''',
+        //                     to: "${params.EMAIL_RECIPIENTS}",
+        //                     mimeType: 'text/html'
+        //                 )
+        //             } catch (Exception e) {
+        //                 echo "Lỗi khi gửi email báo cáo: ${e.getMessage()}"
+        //             }
+        //         }
+        //     }
+        // }
+    }
+
+    post {
+        always {
+            node('Master') {
+                echo "Pipeline hoàn thành với timestamp: ${env.TIMESTAMP}"
+                echo "Test directory name: ${env.TEST_DIR_NAME ?: 'Not available'}"
+            }
+        }
+        success {
+            node('Master') {
+                echo "Pipeline thực thi thành công!"
+            }
+        }
+        failure {
+            node('Master') {
+                echo "Pipeline thực thi thất bại!"
+            }
+        }
+    }
+}
+
+// Hàm thực thi performance test
+def runPerformanceTest(String workerName, String resultDir) {
+    echo "Pull source to ${workerName}"
+
+    // checkout([
+    //     $class: 'GitSCM',
+    //     branches: [[name: "*/main"]],
+    //     doGenerateSubmoduleConfigurations: false,
+    //     extensions: [],
+    //     submoduleCfg: [],
+    //     userRemoteConfigs: [[
+    //         credentialsId: '3606cff0-4458-4295-89f3-2e03af248f90',
+    //         url: 'https://github.com/VNTestek/perf-jmeter.git'
+    //     ]]
+    // ])
+
+    try {
+        // Create result directory
+        sh "mkdir -p ${resultDir}"
+
+        // Prepare test execution
+        sh """
+            # Add test execution data to properties file
+            #echo "users=${params.USERS}" > test.properties
+            #echo "duration=${params.DURATION}" >> test.properties
+            #echo "rampup=${params.RAMP_UP}" >> test.properties
+            #echo "step=${params.STEP}" >> test.properties
+            #echo "worker=${workerName}" >> test.properties
+            #echo "executionTime=${params.BUILD_TIMESTAMP}" >> test.properties
+
+            # Grant permission to execute
+            chmod +x bin/jmeter || true
+            chmod +x execution.sh || true
+
+            # Execute performance test
+            ./execution.sh ${params.TEST_PLAN} ${params.TESTING_FUNCTIONS} ${params.BUILD_TIMESTAMP} ${params.USERS} ${params.RAMP_UP} ${params.STEP} ${params.DURATION} ${workerName}
+        """
+
+
+        echo "Completed: ${workerName}"
+    } catch (Exception e) {
+        echo "Lỗi khi thực thi test hiệu năng trên ${workerName}: ${e.getMessage()}"
+        throw e
+    }
+}
+
+// Hàm tìm file HTML
+def exportHtmlFiles(String directory, String workerName) {
+    echo "Starting export the report: ${directory}"
+    try {
+        // Kiểm tra thư mục tồn tại
+        def dirExists = sh(
+            script: "test -d ${directory} && echo 'true' || echo 'false'",
+            returnStdout: true
+        ).trim()
+
+        if (dirExists != 'true') {
+            echo "Thư mục ${directory} không tồn tại, đang tạo..."
+            sh "mkdir -p ${directory}"
+            return []
+        }
+
+        // Tìm file HTML
+        def findCommand = "find ${directory} -path '*/html/index.html' || echo ''"
+        def result = sh(script: findCommand, returnStdout: true).trim()
+
+        // Chuyển đổi kết quả thành danh sách
+        def files = []
+        if (result && result != '') {
+            files = result.split('\n')
+            echo "Have ${files.size()} file HTML as:"
+            files.each { file ->
+                echo "\tFile : ${file}"
+            }
+        } else {
+            echo "Không tìm thấy file HTML nào trong thư mục ${directory}"
+        }
+
+        try {
+            // Nhóm các file theo thư mục
+            def reportsByDir = [:]
+
+            files.each { filePath ->
+                def dir = sh(script: "dirname ${filePath}", returnStdout: true).trim()
+                def fileName = sh(script: "basename ${filePath}", returnStdout: true).trim()
+
+                if (!reportsByDir.containsKey(dir)) {
+                    reportsByDir[dir] = []
+                }
+                reportsByDir[dir] << fileName
+            }
+
+            // Xuất bản các báo cáo theo thư mục
+            reportsByDir.each { dir, fileList ->
+                // Trích xuất tên thư mục test từ đường dẫn
+                def htmlDir = dir  // thư mục chứa file index.html
+                def parentDir = sh(script: "dirname ${htmlDir}", returnStdout: true).trim()
+                def testDirName = sh(script: "basename ${parentDir}", returnStdout: true).trim()
+
+                // Lưu vào biến môi trường để sử dụng trong các giai đoạn sau
+                env.TEST_DIR_NAME = testDirName
+                env.RESULT_DIR_FULL =  dir
+
+                // Ưu tiên file index.html nếu có
+                if (fileList.contains('index.html')) {
+                    publishHTML([
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: dir,
+                        reportFiles: 'index.html',
+                        reportName: "PT_Report_${testDirName}",
+                        reportTitles: "PT_Report_${testDirName}"
+                    ])
+                } else {
+                    //TODO
+                }
+
+                // Phân tích tên thư mục test để trích xuất thông tin chi tiết
+                // try {
+                //     def matcher = testDirName =~ /(\d{8})_(\d{6})_.*_(\d+)C(\d+)R(\d+)S(\d+)D/
+                //     if (matcher.matches()) {
+                //         def date = matcher.group(1)
+                //         def time = matcher.group(2)
+                //         def users = matcher.group(3)
+                //         def rampup = matcher.group(4)
+                //         def step = matcher.group(5)
+                //         def duration = matcher.group(6)
+
+                //         echo "Test Configuration:"
+                //         echo "- Date: ${date}"
+                //         echo "- Time: ${time}"
+                //         echo "- Users: ${users}"
+                //         echo "- Ramp-up: ${rampup}"
+                //         echo "- Step: ${step}"
+                //         echo "- Duration: ${duration}"
+                //     }
+                // } catch (Exception e) {
+                //     echo "Không thể phân tích chi tiết từ tên thư mục: ${e.getMessage()}"
+                // }
+            }
+        } catch (Exception e) {
+            echo "Lỗi khi xuất bản báo cáo HTML: ${e.getMessage()}"
+        }
+        return files
+    } catch (Exception e) {
+        echo "Lỗi khi tìm file HTML: ${e.getMessage()}"
+        return []
+    }
+}

@@ -3,15 +3,16 @@
 # Script thực thi đồng bộ các lệnh trên nhiều worker với timeout
 # Sử dụng: ./sync-worker-execution.sh <commands_file> <result_dir> [default_timeout]
 
-COMMANDS_FILE=$1                # File lệnh chứa các lệnh cần thực thi
+COMMANDS_EXE=$1                 # Command cần thực thi
 RESULT_DIR=$2                   # Thư mục lưu trữ kết quả
 DEFAULT_TIMEOUT=${3:-1200}      # Thời gian chờ mặc định (giây); 1200 giây = 20 phút
 WORKER_NAME_EXE=$4              # Tên worker thực thi lệnh
 TIMESTAMP=$5                    # Thời gian thực thi tập lệnh (YYYYMMDD_HHMM)
-API_SERVER=$6                   # Địa chỉ API server    
+API_SERVER=$6                   # Địa chỉ API server
 MAX_WAIT_TIME=${7:-300}         # Thời gian chờ tối đa cho tất cả các worker (giây)
-AUTH_KEY=$8                     # Khóa xác thực cho API server 
+AUTH_KEY=$8                     # Khóa xác thực cho API server
 
+echo "Đang thực thi lệnh: $COMMANDS_EXE"
 # Thiết lập logging
 LOG_DIR="${RESULT_DIR}/logs"
 mkdir -p $LOG_DIR
@@ -189,7 +190,8 @@ execute_with_timeout() {
     log "INFO" "⏱️ Thực thi lệnh với timeout ${timeout}s: $command"
 
     # Sử dụng timeout command để giới hạn thời gian chạy
-    timeout $timeout bash -c "$command" >$output_file 2>&1
+    #timeout $timeout bash -c "$command" >$output_file 2>&1
+    (timeout $timeout bash -c "$command" 2>&1 | tee "$output_file"; exit ${PIPESTATUS[0]})
     local exit_code=$?
 
     if [ $exit_code -eq 124 ]; then
@@ -262,45 +264,6 @@ if [ "$status_code" != "200" ]; then
 fi
 
 log "INFO" "🚀 Bắt đầu thực thi hiệu năng trên worker $WORKER_NAME"
-commandList="echo PerformanceTest"
-
-# Read execute commands from the file and save to server with list command line contain Master and only valid command
-log "INFO" "🔄 Đang đọc lệnh từ file: $COMMANDS_FILE"
-echo "Đang đọc lệnh từ file: $COMMANDS_FILE"
-
-# Read execute commands from the file and save to the list  worker name contain Master
-if [[ $WORKER_NAME_EXE == *"Master"* ]]; then
-    cleanup_worker_status true
-    # Kiểm tra file lệnh
-    if [ ! -f "$COMMANDS_FILE" ]; then
-        log "ERROR" "❌ File lệnh không tồn tại: $COMMANDS_FILE"
-        exit 1
-    fi
-
-    log "INFO" "✅ File lệnh tồn tại: $COMMANDS_FILE"
-    log "INFO" "🔄 Đang đọc lệnh từ file: $COMMANDS_FILE"
-    log "INFO" "🔄 Danh sách lệnh thực thi:"
-    log "INFO" "--------------------------------------------------------"
-    while IFS= read -r line || [ -n "$line" ]; do
-        if [[ -z "$line" || "$line" == \#* ]]; then
-            # Bỏ qua dòng trống hoặc dòng bắt đầu bằng #
-            continue
-        fi
-
-        # Thay thế {ExecutionDate} trong line bằng TIMESTAMP
-        line=${line//\{ExecutionDate\}/$TIMESTAMP}
-
-        log "INFO" "$line"
-        commandList="${commandList}|||${line}"
-    done <"$COMMANDS_FILE"
-    log "INFO" "--------------------------------------------------------"
-
-    log "INFO" "🔄 Đang lưu danh sách lệnh vào server"
-    update_command_list "$commandList"
-else
-    sleep 30
-fi
-
 log "INFO" "✅ Kết nối tới API server thành công"
 log "INFO" "🔄 Dọn dẹp trạng thái worker trước khi thực thi lệnh"
 log "INFO" "✅ Tất cả các worker đã sẵn sàng"
@@ -310,180 +273,73 @@ sleep 10
 cmdCount=0
 total_success=0
 total_failure=0
+log "INFO" "🔄 Vincent Test: $COMMANDS_EXE"
 # while true and break if status of command is COMPLETED
-while true; do
-    # Get command from server
-    log "INFO" "🔄 Lấy thông tin command sẽ được thực thi ${cmdCount}"
-    apiPath="/api/getCommand?auth=${AUTH_KEY}&index=${cmdCount}"
-    response=$(curl -s -w "%{http_code}" -X GET "${API_SERVER}${apiPath}")
+line="$COMMANDS_EXE $WORKER_NAME_EXE"
+log "INFO" "🔄 Vincent Test: $line"
+# Replace {ExecutionDate} with TIMESTAMP
+line=${line//\{ExecutionDate\}/$TIMESTAMP}
 
-    if [ $? -ne 0 ]; then
-        log "ERROR" "❌ Không thể get command cho $WORKER_NAME: $response"
-    fi
+log "INFO"    "✅ Start execution:  $line"
 
-    # Extract data from response
-    body=${response:0:${#response}-3}
-    log "INFO"    "✅ Start execution #$cmdCount: $body"
-    # if response  = INDEX_OUT_OF_BOUNDS, break loop
-    if [[ $body == *"INDEX_OUT_OF_BOUNDS"* ]]; then
-        log "INFO" "❌ Over max index command, STOP TEST"
-        log "INFO" "------------------------------------------------------------------------"
-        log "INFO" "✅ Đã hoàn thành tất cả các lệnh lúc $(date): $cmdCount execution scenario"
-        break
-    fi
+# Check whether the line is a command and have a timeout
+# Format: TIMEOUT=3600; actual_command
+timeout_value=$DEFAULT_TIMEOUT
 
-    sleep 5
-    line=${body//\{WorkerName\}/$WORKER_NAME_EXE}
-    log "INFO"    "✅ Start execution #$cmdCount: $line"
+if [[ "$line" =~ ^TIMEOUT=([0-9]+)[[:space:]]*\; ]]; then
+    timeout_value="${BASH_REMATCH[1]}"
+    # Remove the timeout part from the line
+    line="${line#TIMEOUT=$timeout_value; }"
+fi
 
-    # Check whether the line is a command and have a timeout
-    # Format: TIMEOUT=3600; actual_command
-    timeout_value=$DEFAULT_TIMEOUT
+log "INFO" "-------------------------------------------------------------------------"
+log "INFO" "▶️ Chuẩn bị thực thi lệnh (timeout: ${timeout_value}s): $line"
 
-    if [[ "$line" =~ ^TIMEOUT=([0-9]+)[[:space:]]*\; ]]; then
-        timeout_value="${BASH_REMATCH[1]}"
-        # Remove the timeout part from the line
-        line="${line#TIMEOUT=$timeout_value; }"
-    fi
+# Uppdate worker status IDLE
+update_worker_status "$cmdCount" "IDLE"
 
-    log "INFO" "-------------------------------------------------------------------------"
-    update_command "$cmdCount" "$line"
-    log "INFO" "▶️ Chuẩn bị thực thi lệnh #$cmdCount (timeout: ${timeout_value}s): $line"
+# Wait for all workers to be IDLE
+wait_for_all_workers "IDLE" $cmdCount
+sleep 30        #wait for 30 seconds before executing the command to sync all workers
 
-    # Uppdate worker status IDLE
-    update_worker_status "$cmdCount" "IDLE"
+# Đánh dấu worker đã sẵn sàng
+log "INFO" "🔄 Đánh dấu worker $WORKER_NAME đã sẵn sàng cho lệnh: $line"
+update_worker_status "$cmdCount" "READY"
 
-    # Wait for all workers to be IDLE
-    wait_for_all_workers "IDLE" $cmdCount
-    sleep 30        #wait for 30 seconds before executing the command to sync all workers
+# Wait for all workers to be ready
+wait_for_all_workers "READY" $cmdCount
 
-    # Đánh dấu worker đã sẵn sàng
-    log "INFO" "🔄 Đánh dấu worker $WORKER_NAME đã sẵn sàng cho lệnh: $cmdCount : $line"
-    update_worker_status "$cmdCount" "READY"
+# Execute the command after all workers are ready
+sleep 30        #wait for 30 seconds before executing the command to sync all workers
+update_worker_status "$cmdCount" "RUNNING"
 
-    # Wait for all workers to be ready
-    wait_for_all_workers "READY" $cmdCount
+# Start executing the command
+command_start=$(date +"%Y-%m-%d %H:%M:%S")
+log "INFO" "🏃 Đang thực thi lệnh : $line lúc $command_start"
+execute_with_timeout "$line" "$timeout_value" "$cmdCount"
+result=$?
+command_end=$(date +"%Y-%m-%d %H:%M:%S")
 
-    # Execute the command after all workers are ready
-    sleep 30        #wait for 30 seconds before executing the command to sync all workers
-    update_worker_status "$cmdCount" "RUNNING"
-
-    # Start executing the command
-    command_start=$(date +"%Y-%m-%d %H:%M:%S")
-    log "INFO" "🏃 Đang thực thi lệnh #$cmdCount : $line lúc $command_start"
-    execute_with_timeout "$line" "$timeout_value" "$cmdCount"
-    result=$?
-    command_end=$(date +"%Y-%m-%d %H:%M:%S")
-
-    # Đánh dấu lệnh đã hoàn thành
-    update_worker_status "$cmdCount" "COMPLETED"
-    log "INFO" "✅ Lệnh #$cmdCount đã hoàn thành lúc $command_end"
-    if [ $result -eq 0 ]; then
-        log "INFO" "✅ Lệnh #$command_id thực thi thành công"
-        total_success=$((total_success + 1))
+# Đánh dấu lệnh đã hoàn thành
+update_worker_status "$cmdCount" "COMPLETED"
+log "INFO" "✅ Lệnh #$cmdCount đã hoàn thành lúc $command_end"
+if [ $result -eq 0 ]; then
+    log "INFO" "✅ Lệnh #$command_id thực thi thành công"
+    total_success=$((total_success + 1))
+else
+    if [ $result -eq 124 ]; then
+        log "ERROR" "⏰ Lệnh #$command_id đã vượt quá thời gian chờ (${timeout_value}s)"
     else
-        if [ $result -eq 124 ]; then
-            log "ERROR" "⏰ Lệnh #$command_id đã vượt quá thời gian chờ (${timeout_value}s)"
-        else
-            log "ERROR" "❌ Lệnh #$command_id thất bại với mã lỗi: $result"
-        fi
-        total_failure=$((total_failure + 1))
+        log "ERROR" "❌ Lệnh #$command_id thất bại với mã lỗi: $result"
     fi
+    total_failure=$((total_failure + 1))
+fi
 
-    # Update command status: COMPLETED
-    wait_for_all_workers "COMPLETED" $cmdCount
-    log "INFO" "⏳ Chờ 180 giây trước khi chuẩn bị lệnh tiếp theo..."
-    sleep 180
-    update_worker_status "$cmdCount" "IDLE"
-
-    cmdCount=$((cmdCount + 1))
-
-done
-
-
-
-
-
-# # Đọc file và tìm các lệnh thực thi
-# found_execute_marker=false
-# while IFS= read -r line || [ -n "$line" ]; do
-#     echo "Đang đọc lệnh: $line"
-#     if [[ -z "$line" || "$line" == \#* ]]; then
-#         # Bỏ qua dòng trống hoặc dòng bắt đầu bằng #
-#         continue
-#     fi
-
-#     # Thay thế ${executionDate} trong line bằng TIMESTAMP; ${workerName} trong line bằng WORKER_NAME
-#     line=${line//\${executionDate}/$TIMESTAMP}
-#     line=${line//\${workerName}/$WORKER_NAME}
-
-#     echo "Đang thực thi lệnh: $line"
-
-#     # Check whether the line is a command and have a timeout
-#     # Format: TIMEOUT=3600; actual_command
-#     timeout_value=$DEFAULT_TIMEOUT
-
-#     if [[ "$line" =~ ^TIMEOUT=([0-9]+)[[:space:]]*\; ]]; then
-#         timeout_value="${BASH_REMATCH[1]}"
-#         # Remove the timeout part from the line
-#         line="${line#TIMEOUT=$timeout_value; }"
-#     fi
-
-#     log "INFO" "-------------------------------------------------------------------------"
-#     update_command "$cmdCount" "$line"
-#     log "INFO" "▶️ Chuẩn bị thực thi lệnh #$cmdCount (timeout: ${timeout_value}s): $line"
-
-#     # Uppdate worker status IDLE
-#     update_worker_status "$cmdCount" "IDLE"
-
-#     # Wait for all workers to be IDLE
-#     wait_for_all_workers "IDLE"
-#     sleep 30        #wait for 30 seconds before executing the command to sync all workers
-
-#     # Đánh dấu worker đã sẵn sàng
-#     log "INFO" "🔄 Đánh dấu worker $WORKER_NAME đã sẵn sàng cho lệnh: $cmdCount : $line"
-#     update_worker_status "$cmdCount" "READY"
-
-#     # Wait for all workers to be ready
-#     wait_for_all_workers "READY"
-
-#     # Execute the command after all workers are ready
-#     sleep 30        #wait for 30 seconds before executing the command to sync all workers
-#     update_worker_status "$cmdCount" "RUNNING"
-
-#     # Start executing the command
-#     command_start=$(date +"%Y-%m-%d %H:%M:%S")
-#     log "INFO" "🏃 Đang thực thi lệnh #$cmdCount : $line lúc $command_start"
-#     execute_with_timeout "$line" "$timeout_value" "$cmdCount"
-#     result=$?
-#     command_end=$(date +"%Y-%m-%d %H:%M:%S")
-
-#     # Đánh dấu lệnh đã hoàn thành
-#     update_worker_status "$cmdCount" "COMPLETED"
-#     log "INFO" "✅ Lệnh #$cmdCount đã hoàn thành lúc $command_end"
-#     if [ $result -eq 0 ]; then
-#         log "INFO" "✅ Lệnh #$command_id thực thi thành công"
-#         total_success=$((total_success + 1))
-#     else
-#         if [ $result -eq 124 ]; then
-#             log "ERROR" "⏰ Lệnh #$command_id đã vượt quá thời gian chờ (${timeout_value}s)"
-#         else
-#             log "ERROR" "❌ Lệnh #$command_id thất bại với mã lỗi: $result"
-#         fi
-#         total_failure=$((total_failure + 1))
-#     fi
-
-#     # Update command status: COMPLETED
-#     wait_for_all_workers "COMPLETED"
-#     log "INFO" "⏳ Chờ 180 giây trước khi chuẩn bị lệnh tiếp theo..."
-#     sleep 180
-#     update_worker_status "$cmdCount" "IDLE"
-
-#     cmdCount=$((cmdCount + 1))
-# done <"$COMMANDS_FILE"
-
-# log "INFO" "🏁 Đã hoàn thành tất cả các lệnh lúc $(date): $cmdCount execution scenario"
-# log "INFO" "📊 Kết quả trên worker $WORKER_NAME: $total_success thành công, $total_failure thất bại"
+# Update command status: COMPLETED
+wait_for_all_workers "COMPLETED" $cmdCount
+log "INFO" "⏳ Chờ 180 giây trước khi chuẩn bị lệnh tiếp theo..."
+sleep 180
+update_worker_status "$cmdCount" "IDLE"
 
 # Trả về mã lỗi
 if [ $total_failure -eq 0 ]; then

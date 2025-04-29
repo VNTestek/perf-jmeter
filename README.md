@@ -30,3 +30,45 @@
       - influxdb.token: token của InfluxDB
       - influxdb.org: org của InfluxDB
       - influxdb.bucket: bucket của InfluxDB
+
+sudo apt update
+sudo apt install nodejs npm
+Tạo Thư Mục Dự Án
+Copy# Tạo thư mục cho API server
+mkdir -p /opt/jenkins-sync-api
+cd /opt/jenkins-sync-api
+
+# Khởi tạo dự án Node.js
+npm init -y
+1.3. Cài Đặt Các Gói Phụ Thuộc
+Copy# Cài đặt Express và các gói cần thiết
+npm install express body-parser cors morgan winston
+
+Tạo File Mã Nguồn Server
+Tạo file server.js
+
+Sử Dụng PM2 (Giải Pháp Tốt Nhất)
+PM2 là một công cụ quản lý quy trình Node.js mạnh mẽ, ổn định hơn việc tự quản lý process:
+
+Copy# Cài đặt PM2 toàn cục
+sudo npm install -g pm2
+
+# Chạy API server với PM2
+cd /home/vincent/ws/jenkins/jenkins-sync-api
+pm2 start server.js --name jenkins-sync-api
+
+# Lưu cấu hình để tự khởi động khi boot
+pm2 save
+pm2 startup
+PM2 cung cấp các tính năng hữu ích như:
+
+Tự động khởi động lại khi server crash
+Quản lý logs dễ dàng
+Theo dõi hiệu suất
+Tự động khởi động khi hệ thống boot
+Để xem logs và trạng thái:
+
+Copypm2 logs jenkins-sync-api
+pm2 status
+
+Jenkins TOken: 110ed92afa26d0e44e6bb730d92816cb59
