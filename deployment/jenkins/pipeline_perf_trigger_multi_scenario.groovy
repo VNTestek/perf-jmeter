@@ -11,7 +11,7 @@ pipeline {
     agent {
         label 'Master'
     }
-
+    
     parameters {
         string(
             name: 'SCENARIO_FILE',
@@ -65,6 +65,21 @@ pipeline {
             description: 'The key to authenticate the API server'
         )
         string(
+            name: 'INFLUX_TOKEN',
+            defaultValue: 'GRTrHcIIG5QYoAaV-S7n_NoZB_SPGVStS6SLRicAlbWpBtd4Lfr_h94obOUjAheAxnhp5cPVNvyYgw9ndUQDgg==',
+            description: 'The token of InfluxDB to save response'
+        )
+        string(
+            name: 'INFLUX_ORG',
+            defaultValue: 'Vincent',
+            description: 'The org of InfluxDB to save response'
+        )
+        string(
+            name: 'INFLUX_BUCKET',
+            defaultValue: 'PERF-SAHA',
+            description: 'The bucket of InfluxDB to save response'
+        )
+        string(
             name: 'EMAIL_RECIPIENTS',
             defaultValue: 'info@testek.edu.vn',
             description: 'List of email recipients (comma-separated)'
@@ -88,14 +103,32 @@ pipeline {
         //BUILD_TRACKER_FILE = "build_tracker.txt"
         JENKINS_PATH="${params.JENKINS_PATH}"
     }
-
+    
     stages {
+        stage('Clean Workspace & Checkout') {
+            steps {
+                deleteDir() // Deletes the current workspace
+                
+                checkout([
+                        $class: 'GitSCM', 
+                        branches: [[name: "*/saha1.5"]], 
+                        doGenerateSubmoduleConfigurations: false, 
+                        extensions: [], 
+                        submoduleCfg: [], 
+                        userRemoteConfigs: [[
+                            credentialsId: 'qc-git-nhs', 
+                            url: 'https://gitlab-nhs.shb.com.vn/qc/perf/jmeter.git'
+                        ]]
+                    ])
+            }
+        }
+        
         stage('Initialize') {
             steps {
                 script {
                     // Tạo thư mục báo cáo
                     sh "mkdir -p ${REPORT_DIR}"
-
+                    
                     // Khởi tạo file theo dõi build
                     // Format: INDEX|COMMAND|BUILD_NUMBER|BUILD_URL|STATUS|START_TIME|END_TIME
                     writeFile file: "${REPORT_DIR}/${BUILD_TRACKER_FILE}", text: "# INDEX|COMMAND|BUILD_NUMBER|BUILD_URL|STATUS|START_TIME|END_TIME\n"
@@ -108,7 +141,7 @@ pipeline {
                     if (!fileExists(params.SCENARIO_FILE)) {
                         error "Scenario file not found: ${params.SCENARIO_FILE}"
                     }
-
+                    
                     echo "Reading scenario file: ${params.SCENARIO_FILE}"
                     def scenarioContent = readFile(params.SCENARIO_FILE).trim()
                     def commandCount = scenarioContent.split('\n').findAll { line ->
@@ -122,36 +155,40 @@ pipeline {
                     def commandListString = commandList.join('\n')
                     echo "Total commands: ${commandCount}"
                     echo "Command list:\n${commandListString}"
-
+                   
 
                     echo "Found ${commandCount} test commands to execute"
                 }
             }
         }
-
+        
         stage('Process Scenarios') {
             steps {
                 script {
                     def scenarioLines = readFile(params.SCENARIO_FILE).split('\n')
                     def processedCount = 0
                     def successCount = 0
-                    def parametersMap = [:]
-
+                    def parametersMap = [:] 
+                    
+                    def localIp = sh(script: "hostname -I | awk '{print \$1}'", returnStdout: true).trim()
+                    echo "Jenkins IP Address: ${localIp}"
+                    def jenkinsAddr="${localIp}"
+                    
                     for (line in scenarioLines) {
                         line = line.trim()
-
+                        
                         // Skip comments and empty lines
                         if (!line || line.startsWith('#')) {
                             continue
                         }
-
+                        
                         processedCount++
                         def currentTimeStamp = new Date().format('yyyy-MM-dd HH:mm:ss')
                         echo "--------------------------------------------------------------------------------------------"
                         echo "Processing command ${processedCount}: ${line}"
-
+                        
                         // Add timestamp parameter
-                        parametersMap['BUILD_TIMESTAMP'] = new Date().format('yyyyMMdd_HHmmss')
+                        parametersMap['BUILD_TIMESTAMP'] = params.BUILD_TIMESTAMP
                         parametersMap['EXECUTION_COMMANDS'] = line
                         parametersMap['SELECTED_NODES'] = params.SELECTED_NODES
                         parametersMap['RESULT_STORAGE_DIR'] = params.RESULT_STORAGE_DIR
@@ -161,35 +198,43 @@ pipeline {
                         parametersMap['MAX_SYNC_WAIT_TIME'] = params.MAX_SYNC_WAIT_TIME
                         parametersMap['EMAIL_RECIPIENTS'] = params.EMAIL_RECIPIENTS
                         parametersMap['RESULT_STORAGE_DIR'] = params.RESULT_STORAGE_DIR
-                        parametersMap['EMAIL_RECIPIENTS'] = 'duybg@shb.com.vn'
-
+                        parametersMap['EMAIL_RECIPIENTS'] = "duybg@shb.com.vn"
+                        parametersMap['API_SERVER'] = "http://${jenkinsAddr}:8089"
+                        parametersMap['INFLUX_TOKEN'] = params.INFLUX_TOKEN
+                        parametersMap['INFLUX_ORG'] = params.INFLUX_ORG
+                        parametersMap['INFLUX_BUCKET'] = params.INFLUX_BUCKET
+                        parametersMap['INFLUX_URL'] = "http://${jenkinsAddr}:8086"
+                        
+                        
                         echo "Triggering job with parameters: ${parametersMap}"
-
+                        
                          // Track job as QUEUED before triggering
                         appendToBuildTracker(processedCount, line, "N/A", "N/A", "QUEUED", currentTimeStamp, "N/A")
-
+                        
                         try {
                             // Trigger job with parameters
-                            def build = build job: 'execution-cmd-scenario',
+                            def build = build job: 'execution-scenario-command', 
                                 parameters: parametersMap.collect { k, v -> string(name: k, value: v) },
                                 wait: params.WAIT_FOR_COMPLETION
-
+                            
                             // Update build number and URL in tracker
-                            def buildUrl = "${env.JENKINS_PATH}job/execution-cmd-scenario/${build.number}/"
+                            def triggeredBuildUrl = build.absoluteUrl
+                            def buildUrl = triggeredBuildUrl.replace('localhost', "${jenkinsAddr}")
+                            //def buildUrl = "http:/${jenkinsAddr}/job/execution-scenario-command/${build.number}/"
                             def status = params.WAIT_FOR_COMPLETION ? "${build.result}" : "RUNNING"
                             def endTime = params.WAIT_FOR_COMPLETION ? new Date().format('yyyy-MM-dd HH:mm:ss') : "N/A"
-
+                            
                             // Update tracker with build info
                             updateBuildTracker(processedCount, line, build.number, buildUrl, status, currentTimeStamp, endTime)
-
+                            
 
                             successCount++
                             echo "Successfully triggered job: ${line}"
-
+                            
                             if (params.WAIT_FOR_COMPLETION) {
                                 echo "Job completed with result: ${build.result}"
                             }
-
+                            
                             if (params.WAIT_BETWEEN_JOBS.toInteger() > 0) {
                                 echo "Waiting ${params.WAIT_BETWEEN_JOBS} seconds before next job..."
                                 sleep time: params.WAIT_BETWEEN_JOBS.toInteger(), unit: 'SECONDS'
@@ -198,10 +243,10 @@ pipeline {
                             echo "ERROR: Failed to trigger job: ${e.message}"
                             // Update tracker with failure info
                             updateBuildTracker(processedCount, line, "N/A", "N/A", "FAILED", currentTimeStamp, new Date().format('yyyy-MM-dd HH:mm:ss'))
-
+                            
                         }
                     }
-
+                    
                     echo "Execution completed. Triggered ${successCount}/${processedCount} jobs successfully."
                     echo "--------------------------------------------------------------------------------------------"
                 }
@@ -214,24 +259,24 @@ pipeline {
                     // Update all running jobs one last time
                     def trackerContent = readFile(file: "${REPORT_DIR}/${BUILD_TRACKER_FILE}")
                     def updatedContent = ""
-
+                    
                     // Add header to updated content
                     updatedContent = "# INDEX|COMMAND|BUILD_NUMBER|BUILD_URL|STATUS|START_TIME|END_TIME\n"
-
+                    
                     // Parse and process each line
                     trackerContent.split('\n').each { line ->
                         if (line.startsWith('#') || line.trim().isEmpty()) {
                             // Skip header or empty lines
                             return
                         }
-
+                        
                         def parts = line.split('\\|', -1)
                         if (parts.size() < 7) {
                             // Invalid format, keep line as is
                             updatedContent += "${line}\n"
                             return
                         }
-
+                        
                         def index = parts[0]
                         def command = parts[1]
                         def buildNumber = parts[2]
@@ -239,12 +284,12 @@ pipeline {
                         def status = parts[4]
                         def startTime = parts[5]
                         def endTime = parts[6]
-
+                        
                         // Check and update running jobs
                         if (status == "RUNNING" && buildNumber != "N/A") {
                             try {
                                 def jobStatus = checkJobStatus('execution-cmd-scenario', buildNumber)
-
+                                
                                 if (jobStatus != "RUNNING") {
                                     status = jobStatus
                                     endTime = new Date().format('yyyy-MM-dd HH:mm:ss')
@@ -254,25 +299,25 @@ pipeline {
                                 echo "Error checking job status: ${e.message}"
                             }
                         }
-
+                        
                         // Add updated line to content
                         updatedContent += "${index}|${command}|${buildNumber}|${buildUrl}|${status}|${startTime}|${endTime}\n"
                     }
-
+                    
                     // Write updated content back to tracker file
                     writeFile file: "${REPORT_DIR}/${BUILD_TRACKER_FILE}", text: updatedContent
-
+                    
                     // Add execution end time to a separate file
                     writeFile file: "${REPORT_DIR}/execution_end.txt", text: new Date().format('yyyy-MM-dd HH:mm:ss')
-
+                    
                     // Generate final HTML report
                     generateHTMLReport()
-
+                    
                     // Calculate and display summary
                     def totalJobs = 0
                     def successJobs = 0
                     def failedJobs = 0
-
+                    
                     trackerContent.split('\n').each { line ->
                         if (!line.startsWith('#') && !line.trim().isEmpty()) {
                             totalJobs++
@@ -284,7 +329,7 @@ pipeline {
                             }
                         }
                     }
-
+                    
                     echo "Execution Summary:"
                     echo "Total Jobs: ${totalJobs}"
                     echo "Success: ${successJobs}"
@@ -296,13 +341,13 @@ pipeline {
             }
         }
     }
-
+    
     post {
         always {
             script {
                 // Lưu trữ báo cáo HTML và file tracker như artifacts
                 archiveArtifacts artifacts: "${REPORT_DIR}/**", allowEmptyArchive: true
-
+                
                 // Publish HTML report
                 publishHTML(target: [
                     allowMissing: false,
@@ -331,23 +376,23 @@ def updateBuildTracker(index, command, buildNumber, buildUrl, status, startTime,
     def trackerContent = readFile(file: "${REPORT_DIR}/${BUILD_TRACKER_FILE}")
     def lines = trackerContent.split('\n')
     def updatedContent = ""
-
+    
     // Keep header line
     updatedContent = lines[0] + "\n"
-
+    
     // Process each line
     for (int i = 1; i < lines.size(); i++) {
         def line = lines[i]
         if (line.trim().isEmpty()) {
             continue  // Skip empty lines
         }
-
+        
         def parts = line.split('\\|', -1)
         if (parts.size() < 7) {
             updatedContent += line + "\n"  // Keep invalid lines as is
             continue
         }
-
+        
         def lineIndex = parts[0]
         if (lineIndex == index.toString()) {
             // Update this line
@@ -357,7 +402,7 @@ def updateBuildTracker(index, command, buildNumber, buildUrl, status, startTime,
             updatedContent += line + "\n"
         }
     }
-
+    
     writeFile file: "${REPORT_DIR}/${BUILD_TRACKER_FILE}", text: updatedContent
 }
 
@@ -368,16 +413,16 @@ def checkJobStatus(jobName, buildNumber) {
         if (job == null) {
             return "UNKNOWN"
         }
-
+        
         def build = job.getBuildByNumber(Integer.parseInt(buildNumber.toString()))
         if (build == null) {
             return "UNKNOWN"
         }
-
+        
         if (build.isBuilding()) {
             return "RUNNING"
         }
-
+        
         return build.getResult().toString()
     } catch (Exception e) {
         echo "Error checking job status: ${e.message}"
@@ -392,11 +437,11 @@ def generateHTMLReport() {
     def trackerContent = readFile(file: "${REPORT_DIR}/${BUILD_TRACKER_FILE}")
     echo "Tracker content:\n${trackerContent}"
     def lines = trackerContent.split('\n')
-
+    
     // Read execution start and end times
     def executionStart = env.EXECUTION_START_TIME
     def executionEnd = ""
-
+    
     try {
         if (fileExists("${REPORT_DIR}/execution_end.txt")) {
             executionEnd = readFile("${REPORT_DIR}/execution_end.txt").trim()
@@ -406,27 +451,27 @@ def generateHTMLReport() {
     } catch (Exception e) {
         executionEnd = new Date().format('yyyy-MM-dd HH:mm:ss')
     }
-
+    
     // Calculate metrics
     def totalJobs = 0
     def successJobs = 0
     def failedJobs = 0
     def runningJobs = 0
-
+    
     // Process each line to calculate stats
     for (int i = 1; i < lines.size(); i++) {
         def line = lines[i]
         if (line.trim().isEmpty() || line.startsWith('#')) {
             continue
         }
-
+        
         totalJobs++
-
+        
         def parts = line.split('\\|', -1)
         if (parts.size() < 5) {
             continue
         }
-
+        
         def status = parts[4]
         if (status == "SUCCESS") {
             successJobs++
@@ -436,14 +481,14 @@ def generateHTMLReport() {
             runningJobs++
         }
     }
-
+    
     // Calculate duration
     def reportStartDate =  executionStart
     def reportEndDate =  executionEnd
     def reportDurationMs = ""
     def durationMinutes = "N/A"
     def durationSeconds = "N/A"
-
+    
     // Create HTML content
     def htmlContent = """
     <!DOCTYPE html>
@@ -461,7 +506,7 @@ def generateHTMLReport() {
             background-color: #f8f9fa;
         }
         .container {
-            max-width: 1200px;
+            max-width: 1800px;
             margin: 0 auto;
             background-color: white;
             padding: 20px;
@@ -490,7 +535,7 @@ def generateHTMLReport() {
         .success { background-color: #d4edda; color: #155724; }
         .failure { background-color: #f8d7da; color: #721c24; }
         .other { background-color: #fff3cd; color: #856404; }
-
+        
         .summary-label {
             font-size: 0.9em;
             font-weight: 500;
@@ -512,7 +557,7 @@ def generateHTMLReport() {
         .metadata div {
             padding: 5px 0;
         }
-
+        
         table {
             width: 100%;
             border-collapse: collapse;
@@ -553,14 +598,14 @@ def generateHTMLReport() {
         .status-FAILED { background-color: #dc3545; }
         .status-ABORTED { background-color: #6c757d; }
         .status-UNKNOWN { background-color: #6c757d; }
-
+        
         .command-cell {
-            max-width: 300px;
+            max-width: 1200px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-
+        
         .progress-container {
             width: 100%;
             height: 20px;
@@ -579,7 +624,7 @@ def generateHTMLReport() {
             font-weight: 500;
             border-radius: 10px;
         }
-
+        
         @media screen and (max-width: 768px) {
             .summary {
                 grid-template-columns: repeat(2, 1fr);
@@ -594,16 +639,16 @@ def generateHTMLReport() {
     <body>
     <div class="container">
         <h1>Test Execution Report</h1>
-
+        
         <div class="metadata">
             <div><strong>Parent Build:</strong> #${env.BUILD_NUMBER}</div>
             <div><strong>Status:</strong> ${runningJobs > 0 ? 'IN PROGRESS' : 'COMPLETED'}</div>
             <div><strong>Execution Start:</strong> ${executionStart}</div>
             <div><strong>Execution End:</strong> ${executionEnd}</div>
-            <div><strong>Author:</strong> Digital Division - SHB: Vincent</div>
+            <div><strong>Author:</strong> Digital Division - SHB: DuyBG</div>
             <div><strong>Total Commands:</strong> ${totalJobs}</div>
         </div>
-
+        
         <div class="summary">
             <div class="summary-item total">
                 <div class="summary-label">Total Jobs</div>
@@ -622,11 +667,11 @@ def generateHTMLReport() {
                 <div class="summary-value">${totalJobs - successJobs - failedJobs}</div>
             </div>
         </div>
-
+        
         <div class="progress-container">
             <div class="progress-bar">${totalJobs > 0 ? (successJobs * 100 / totalJobs).toInteger() : 0}%</div>
         </div>
-
+        
         <h2>Job Details</h2>
         <table>
             <thead>
@@ -648,12 +693,12 @@ def generateHTMLReport() {
         if (line.trim().isEmpty() || line.startsWith('#')) {
             continue
         }
-
+        
         def parts = line.split('\\|', -1)
         if (parts.size() < 7) {
             continue
         }
-
+        
         def index = parts[0]
         def command = parts[1]
         def buildNumber = parts[2]
@@ -661,7 +706,7 @@ def generateHTMLReport() {
         def status = parts[4]
         def startTime = parts[5]
         def endTime = parts[6]
-
+        
         // Calculate duration
         def duration = 'N/A'
         if (endTime != 'N/A' && startTime != 'N/A') {
@@ -669,7 +714,7 @@ def generateHTMLReport() {
                 // def cmdStartDate =  startTime
                 // def cmdEndDate = endTime
                 // def cmdDurationMs = ""
-
+                
                 // if (cmdDurationMs >= 3600000) {
                 //     duration = "${Math.floor(cmdDurationMs/3600000)}h ${Math.floor((cmdDurationMs%3600000)/60000)}m ${Math.floor((cmdDurationMs%60000)/1000)}s"
                 // } else if (cmdDurationMs >= 60000) {
@@ -682,7 +727,7 @@ def generateHTMLReport() {
                 duration = 'Error'
             }
         }
-
+        
         htmlContent += """
                 <tr>
                     <td>${index}</td>
@@ -694,13 +739,13 @@ def generateHTMLReport() {
                 </tr>
                 """
     }
-
+    
     // Complete the HTML document
     htmlContent += """
             </tbody>
         </table>
     </div>
-
+    
     <script>
         // Auto-refresh if any jobs are running
         const statusElements = document.querySelectorAll('.status-RUNNING, .status-QUEUED');

@@ -3,56 +3,80 @@ pipeline {
 
     parameters {
         choice(
-            name: 'SELECTED_NODES',
-            choices: ['Master'],
-            description: 'Chọn node để thực thi test hiệu năng (mặc định bao gồm tất cả các node khả dụng)'
+                name: 'SELECTED_NODES',
+                choices: ['Master'],
+                description: 'Chọn node để thực thi test hiệu năng (mặc định bao gồm tất cả các node khả dụng)'
+        )
+        choice(
+                name: 'URL',
+                choices: ['htt'],
+                description: 'Chọn node để thực thi test hiệu năng (mặc định bao gồm tất cả các node khả dụng)'
+        )
+        string(
+                name: 'BUILD_TIMESTAMP',
+                defaultValue: "${new Date().format('yyyyMMdd_HHmmss')}",
+                description: 'Execution Date (format: yyyyMMdd_HHmmss)'
+        )
+        string(
+                name: 'TEST_PLAN',
+                defaultValue: '20241016_Login_Dashboard',
+                description: 'Your test script (without jmx) (Optional)\n1. Login:20241016_Login_Dashboard\n2. Transfer SameBank:20241016_Transfer_SameBank \n'
+        )
+        string(
+                name: 'TESTING_FUNCTIONS',
+                defaultValue: 'Load_Login',
+                description: 'Your testing functions, form: [TestType]_[TestName]'
+        )
+        string(
+                name: 'USERS',
+                defaultValue: '10',
+                description: 'Virtual User'
+        )
+        string(
+                name: 'RAMP_UP',
+                defaultValue: '4',
+                description: 'Ramp-up Time (minutes)'
+        )
+        string(
+                name: 'STEP',
+                defaultValue: '10',
+                description: 'Step Count'
+        )
+        string(
+                name: 'DURATION',
+                defaultValue: '10',
+                description: 'Duration - Hold Time (minutes)'
+        )
+        string(
+                name: 'INFLUXDB_URL',
+                defaultValue: 'http://localhost:8086',
+                description: 'URL of InfluxDB instance (e.g., http://localhost:8086)'
+        )
+        string(
+                name: 'INFLUXDB_ORG',
+                defaultValue: 'Testek',
+                description: 'Organization name in InfluxDB (e.g., Testek)'
+        )
+        string(
+                name: 'INFLUXDB_BUCKET',
+                defaultValue: 'PT-Training',
+                description: 'Bucket name in InfluxDB (e.g., PT-Training)'
+        )
+        string(
+                name: 'INFLUXDB_TOKEN',
+                defaultValue: 'mKH_LZtmaLakGfgZYtcrbCEkv7P8FfBICCj2f-8FHkY8eQ4_xtLz5kRWV3SpBQLggBWhiwosW5G9g6i8a8OeAg==',
+                description: 'Token for InfluxDB authentication'
+        )
+        string(
+                name: 'EMAIL_RECIPIENTS',
+                defaultValue: 'info@testek.edu.vn',
+                description: 'List of email recipients (comma-separated)'
         )
 
         string(
-            name: 'BUILD_TIMESTAMP',
-            defaultValue: "${new Date().format('yyyyMMdd_HHmmss')}",
-            description: 'Execution Date (format: yyyyMMdd_HHmmss)'
-        )
-        string(
-            name: 'TEST_PLAN',
-            defaultValue: '20241016_Login_Dashboard',
-            description: 'Your test script (without jmx) (Optional)\n1. Login:20241016_Login_Dashboard\n2. Transfer SameBank:20241016_Transfer_SameBank \n'
-        )
-        string(
-            name: 'TESTING_FUNCTIONS',
-            defaultValue: 'Load_Login',
-            description: 'Your testing functions, form: [TestType]_[TestName]'
-        )
-        string(
-            name: 'USERS',
-            defaultValue: '10',
-            description: 'Virtual User'
-        )
-        string(
-            name: 'RAMP_UP',
-            defaultValue: '4',
-            description: 'Ramp-up Time (minutes)'
-        )
-        string(
-            name: 'STEP',
-            defaultValue: '10',
-            description: 'Step Count'
-        )
-         string(
-            name: 'DURATION',
-            defaultValue: '10',
-            description: 'Duration - Hold Time (minutes)'
-        )
-        string(
-            name: 'EMAIL_RECIPIENTS',
-            defaultValue: 'info@testek.edu.vn',
-            description: 'List of email recipients (comma-separated)'
-        )
-
-        string(
-            name: 'RESULT_STORAGE_DIR',
-            defaultValue: '/home/vincent/ws/perf/report',
-            description: 'Disk - storage directory for test results'
+                name: 'RESULT_STORAGE_DIR',
+                defaultValue: '/home/vincent/ws/perf/report',
+                description: 'Disk - storage directory for test results'
         )
     }
 
@@ -139,8 +163,8 @@ pipeline {
 
                         // Find JTL files from all workers
                         def jtlFiles = sh(
-                            script: "find ${env.RESULT_DIR} -name '*.jtl' | sort",
-                            returnStdout: true
+                                script: "find ${env.RESULT_DIR} -name '*.jtl' | sort",
+                                returnStdout: true
                         ).trim()
 
                         if (jtlFiles) {
@@ -245,13 +269,13 @@ pipeline {
                                     // Display index.html file if available
                                     if (fileList.contains('index.html')) {
                                         publishHTML([
-                                            allowMissing: false,
-                                            alwaysLinkToLastBuild: true,
-                                            keepAll: true,
-                                            reportDir: dir,
-                                            reportFiles: 'index.html',
-                                            reportName: "PT_Report_${testDirName}",
-                                            reportTitles: "PT_Report_${testDirName}"
+                                                allowMissing: false,
+                                                alwaysLinkToLastBuild: true,
+                                                keepAll: true,
+                                                reportDir: dir,
+                                                reportFiles: 'index.html',
+                                                reportName: "PT_Report_${testDirName}",
+                                                reportTitles: "PT_Report_${testDirName}"
                                         ])
                                     } else {
                                         //TODO
@@ -286,8 +310,8 @@ pipeline {
 
                             // Extract test directory name for email
                             env.TEST_DIR_NAME = sh(
-                                script: "basename \$(find ${env.RESULT_DIR} -path '*/html' | head -1 | xargs dirname)",
-                                returnStdout: true
+                                    script: "basename \$(find ${env.RESULT_DIR} -path '*/html' | head -1 | xargs dirname)",
+                                    returnStdout: true
                             ).trim()
                         } else {
                             echo "No JTL files found to merge"
@@ -392,7 +416,7 @@ def runPerformanceTest(String workerName, String resultDir) {
             #echo "step=${params.STEP}" >> test.properties
             #echo "worker=${workerName}" >> test.properties
             #echo "executionTime=${params.BUILD_TIMESTAMP}" >> test.properties
-
+            
             # Grant permission to execute
             chmod +x bin/jmeter || true
             chmod +x execution.sh || true
@@ -415,8 +439,8 @@ def exportHtmlFiles(String directory, String workerName) {
     try {
         // Kiểm tra thư mục tồn tại
         def dirExists = sh(
-            script: "test -d ${directory} && echo 'true' || echo 'false'",
-            returnStdout: true
+                script: "test -d ${directory} && echo 'true' || echo 'false'",
+                returnStdout: true
         ).trim()
 
         if (dirExists != 'true') {
@@ -469,13 +493,13 @@ def exportHtmlFiles(String directory, String workerName) {
                 // Ưu tiên file index.html nếu có
                 if (fileList.contains('index.html')) {
                     publishHTML([
-                        allowMissing: false,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: dir,
-                        reportFiles: 'index.html',
-                        reportName: "PT_Report_${testDirName}",
-                        reportTitles: "PT_Report_${testDirName}"
+                            allowMissing: false,
+                            alwaysLinkToLastBuild: true,
+                            keepAll: true,
+                            reportDir: dir,
+                            reportFiles: 'index.html',
+                            reportName: "PT_Report_${testDirName}",
+                            reportTitles: "PT_Report_${testDirName}"
                     ])
                 } else {
                     //TODO

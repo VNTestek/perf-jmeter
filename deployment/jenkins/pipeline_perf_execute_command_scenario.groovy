@@ -10,12 +10,12 @@ pipeline {
         string(
             name: 'BUILD_TIMESTAMP',
             defaultValue: "${new Date().format('yyyyMMdd_HHmmss')}",
-            description: 'Execution Date (format: yyyyMMdd_HHmmss)'
+            description: 'Thời gian thực thi (format: yyyyMMdd_HHmmss)'
         )
         string(
             name: 'EXECUTION_COMMANDS',
             defaultValue: './execution.sh 20250418_Execution_Script_Demo Testek_Demo {ExecutionDate} 1 1 1 1 ',
-            description: 'Command to execute performance test'
+            description: 'Command thực thi'
         )
         // Các tham số mới cho thực thi đồng bộ
         booleanParam(
@@ -33,10 +33,35 @@ pipeline {
             defaultValue: '300',
             description: 'Thời gian tối đa chờ đồng bộ giữa các worker (giây)'
         )
+        string(
+            name: 'API_SERVER',
+            defaultValue: 'http://10.8.8.95:8089',
+            description: 'The address of the API server'
+        )
          string(
             name: 'AUTH_KEY',
             defaultValue: 'VGVzdGVrX0REX1BlcmZvcm1hbmNlVGVzdA==',
             description: 'The key to authenticate the API server'
+        )
+        string(
+            name: 'INFLUX_TOKEN',
+            defaultValue: 'GRTrHcIIG5QYoAaV-S7n_NoZB_SPGVStS6SLRicAlbWpBtd4Lfr_h94obOUjAheAxnhp5cPVNvyYgw9ndUQDgg==',
+            description: 'The token of InfluxDB to save response'
+        )
+        string(
+            name: 'INFLUX_ORG',
+            defaultValue: 'Vincent',
+            description: 'The org of InfluxDB to save response'
+        )
+        string(
+            name: 'INFLUX_BUCKET',
+            defaultValue: 'PERF-SAHA',
+            description: 'The bucket of InfluxDB to save response'
+        )
+        string(
+            name: 'INFLUX_URL',
+            defaultValue: '',
+            description: 'The url of InfluxDB to save response'
         )
         string(
             name: 'EMAIL_RECIPIENTS',
@@ -59,7 +84,7 @@ pipeline {
         TEST_DIR_NAME = ""
         SMTP_CREDENTIALS = credentials('gmail-smtp-credentials')
         SOURCE_CODE_PACKAGE = "source-code-${TIMESTAMP}.tar.gz"
-        API_SERVER="http://192.168.90.34:8089"
+        API_SERVER="${params.API_SERVER}"
         MAX_WAIT_TIME= "${params.MAX_SYNC_WAIT_TIME}"
         DEFAULT_COMMAND_TIMEOUT = "${params.DEFAULT_COMMAND_TIMEOUT}"
         AUTH_KEY = "${params.AUTH_KEY}"
@@ -73,6 +98,7 @@ pipeline {
             }
             steps {
                 script {
+                     echo "Value: ${env.TIMESTAMP}"
                     // Check if the required parameters are provided
                     if (!params.BUILD_TIMESTAMP?.trim()) {
                         def now = new Date()
@@ -98,16 +124,29 @@ pipeline {
                     // Verify the file path
                     if (params.COMMANDS_SOURCE == 'FILE_PATH') {
                         if (!fileExists(params.COMMANDS_FILE_PATH)) {
-                            error "File lệnh không tồn tại: ${params.COMMANDS_FILE_PATH}"
+                            error "Execution files is not exist: ${params.COMMANDS_FILE_PATH}"
                         }
                     }
+                    echo "Pull source"
+
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: "*/saha1.5"]],
+                        doGenerateSubmoduleConfigurations: false,
+                        extensions: [],
+                        submoduleCfg: [],
+                        userRemoteConfigs: [[
+                            credentialsId: 'qc-git-nhs',
+                            url: 'https://gitlab-nhs.shb.com.vn/qc/perf/jmeter.git'
+                        ]]
+                    ])
 
                     // Cấp quyền thực thi
-                    sh "chmod +x execution-commands.sh"
+                    //sh "chmod +x execution-commands.sh"
                     sh "chmod +x sync-worker-execution.sh"
 
                     // Stash các file để sử dụng trên các worker
-                    stash includes: 'execution-commands.sh,sync-worker-execution.sh', name: 'sync-scripts'
+                    stash includes: 'sync-worker-execution.sh', name: 'sync-scripts'
                 }
             }
         }
@@ -193,9 +232,18 @@ pipeline {
                                 # Merge JTL files using JMeter Plugins
                                 java -jar lib/cmdrunner-2.3.jar --tool Reporter --generate-csv "${mergedJtlFile}" --input-jtl "${env.MERGED_DIR}/merged-result.properties" --plugin-type MergeResults
                                 mv merged-results.jtl ${env.MERGED_DIR}/
-                                # Generate HTML report from merged JTL
-                                ./bin/jmeter -g "${mergedJtlFile}" -o "${env.MERGED_DIR}/html" -Jjmeter.reportgenerator.overall_granularity=1000 -Jjmeter.reportgenerator.apdex_satisfied_threshold=500 -Jjmeter.reportgenerator.apdex_tolerated_threshold=1500
                             """
+
+                           if(selectedNodes.size() > 1) {
+                                // Generate HTML report from merged JTL
+                                sh """
+                                    # Generate HTML report from merged JTL
+                                    #./bin/jmeter -g "${mergedJtlFile}" -o "${env.MERGED_DIR}/html" -Jjmeter.reportgenerator.overall_granularity=1000 -Jjmeter.reportgenerator.apdex_satisfied_threshold=500 -Jjmeter.reportgenerator.apdex_tolerated_threshold=1500
+                                """
+                            } else {
+                                echo "Chỉ có một worker, không cần tạo báo cáo HTML từ kết quả đã hợp nhất."
+                            }
+
 
                             // Archive merged results
                             archiveArtifacts artifacts: "${env.RESULT_DIR}/**", fingerprint: true
@@ -288,20 +336,6 @@ pipeline {
 
 // Hàm thực thi performance test
 def runPerformanceTest(String workerName, String command, String resultDir) {
-    echo "Pull source to ${workerName}"
-
-    // checkout([
-    //     $class: 'GitSCM',
-    //     branches: [[name: "*/main"]],
-    //     doGenerateSubmoduleConfigurations: false,
-    //     extensions: [],
-    //     submoduleCfg: [],
-    //     userRemoteConfigs: [[
-    //         credentialsId: '3606cff0-4458-4295-89f3-2e03af248f90',
-    //         url: 'https://github.com/VNTestek/perf-jmeter.git'
-    //     ]]
-    // ])
-
     try {
         // Create result directory and coordination directory
         sh """
