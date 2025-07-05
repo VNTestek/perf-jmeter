@@ -329,7 +329,7 @@
         <stringProp name="TargetLevel">${__P(USERS,5)}</stringProp>
         <stringProp name="RampUp">${__P(RAMP,1)}</stringProp>
         <stringProp name="Steps">${__P(STEP,1)}</stringProp>
-        <stringProp name="Hold">${__P(DURA,1)}</stringProp>
+        <stringProp name="Hold">${__P(DURA,3)}</stringProp>
         <stringProp name="LogFilename"></stringProp>
         <stringProp name="Iterations"></stringProp>
         <stringProp name="Unit">M</stringProp>
@@ -809,7 +809,7 @@ if((!bizCode.equalsIgnoreCase(&quot;200&quot;) &amp;&amp; !data.equalsIgnoreCase
           </hashTree>
         </hashTree>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group" enabled="true">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group" enabled="false">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <stringProp name="LoopController.loops">4</stringProp>
@@ -827,7 +827,7 @@ if((!bizCode.equalsIgnoreCase(&quot;200&quot;) &amp;&amp; !data.equalsIgnoreCase
         <TestAction guiclass="TestActionGui" testclass="TestAction" testname="Flow Control Action" enabled="true">
           <intProp name="ActionProcessor.action">1</intProp>
           <intProp name="ActionProcessor.target">0</intProp>
-          <stringProp name="ActionProcessor.duration">340000</stringProp>
+          <stringProp name="ActionProcessor.duration">30000</stringProp>
         </TestAction>
         <hashTree/>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="1. Login" enabled="true">
