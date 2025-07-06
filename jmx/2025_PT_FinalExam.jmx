@@ -329,7 +329,7 @@
         <stringProp name="TargetLevel">${__P(USERS,5)}</stringProp>
         <stringProp name="RampUp">${__P(RAMP,1)}</stringProp>
         <stringProp name="Steps">${__P(STEP,1)}</stringProp>
-        <stringProp name="Hold">${__P(DURA,3)}</stringProp>
+        <stringProp name="Hold">${__P(DURA,1)}</stringProp>
         <stringProp name="LogFilename"></stringProp>
         <stringProp name="Iterations"></stringProp>
         <stringProp name="Unit">M</stringProp>
@@ -812,7 +812,7 @@ if((!bizCode.equalsIgnoreCase(&quot;200&quot;) &amp;&amp; !data.equalsIgnoreCase
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
-          <stringProp name="LoopController.loops">3</stringProp>
+          <stringProp name="LoopController.loops">5</stringProp>
           <boolProp name="LoopController.continue_forever">false</boolProp>
         </elementProp>
         <stringProp name="ThreadGroup.num_threads">1</stringProp>
