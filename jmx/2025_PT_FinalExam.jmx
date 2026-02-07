@@ -366,22 +366,22 @@
               </elementProp>
               <elementProp name="influxDBURL" elementType="Argument">
                 <stringProp name="Argument.name">influxDBURL</stringProp>
-                <stringProp name="Argument.value">${__P(DBMETRIC,http://localhost:8086)}</stringProp>
+                <stringProp name="Argument.value">${__P(DBMETRIC,http://192.168.1.55:8086)}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="influxDBToken" elementType="Argument">
                 <stringProp name="Argument.name">influxDBToken</stringProp>
-                <stringProp name="Argument.value">${__P(TOKEN,GRTrHcIIG5QYoAaV-S7n_NoZB_SPGVStS6SLRicAlbWpBtd4Lfr_h94obOUjAheAxnhp5cPVNvyYgw9ndUQDgg==)}</stringProp>
+                <stringProp name="Argument.value">${__P(TOKEN,j9CkH5_LG_hYepgMcsuZKoe4k6Pjk9dmeZeq1K8BwFeKhlI_HEs6XOfHczTudiKdv4g1ZznaBap3vztvNFL-DA==)}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="influxDBOrganization" elementType="Argument">
                 <stringProp name="Argument.name">influxDBOrganization</stringProp>
-                <stringProp name="Argument.value">${__P(ORG,Vincent)}</stringProp>
+                <stringProp name="Argument.value">${__P(ORG,Testek)}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="influxDBBucket" elementType="Argument">
                 <stringProp name="Argument.name">influxDBBucket</stringProp>
-                <stringProp name="Argument.value">${__P(BUCKET,Testek)}</stringProp>
+                <stringProp name="Argument.value">${__P(BUCKET,PT-Training)}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="influxDBFlushInterval" elementType="Argument">

@@ -1,0 +1,9 @@
+# InfluxToken: DSoOWExsJm2fL3rP9aB9X4cAJ2zh1z5C1s1pV4brbpTUgBXA2H-Bl1YpAiMJC7D8sd7Zzj9Y2kUyLW8Url9COQ==
+# Org: LabIT Bucket: ELearning
+./execution.sh 2026_ELearning SMOKE_ELearning {ExecutionDate} 5 2 1 4
+./execution.sh 2026_ELearning SMOKE_ELearning {ExecutionDate} 5 2 1 4
+./execution.sh 2026_ELearning SMOKE_ELearning {ExecutionDate} 5 2 1 4
+
+
+
+
