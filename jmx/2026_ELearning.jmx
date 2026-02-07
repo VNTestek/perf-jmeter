@@ -555,7 +555,7 @@
       <com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroup guiclass="com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroupGui" testclass="com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroup" testname="Streaming" enabled="true">
         <elementProp name="ThreadGroup.main_controller" elementType="com.blazemeter.jmeter.control.VirtualUserController"/>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
-        <stringProp name="TargetLevel">${__P(USERS,34)}</stringProp>
+        <stringProp name="TargetLevel">${__P(USERS_STREAM,34)}</stringProp>
         <stringProp name="RampUp">${__P(RAMP,4)}</stringProp>
         <stringProp name="Steps">${__P(STEP,6)}</stringProp>
         <stringProp name="Hold">${__P(DURA,15)}</stringProp>
@@ -622,7 +622,7 @@
       <com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroup guiclass="com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroupGui" testclass="com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroup" testname="Search Course" enabled="true">
         <elementProp name="ThreadGroup.main_controller" elementType="com.blazemeter.jmeter.control.VirtualUserController"/>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
-        <stringProp name="TargetLevel">${__P(USERS,8)}</stringProp>
+        <stringProp name="TargetLevel">${__P(USERS_SEARCH,8)}</stringProp>
         <stringProp name="RampUp">${__P(RAMP,4)}</stringProp>
         <stringProp name="Steps">${__P(STEP,5)}</stringProp>
         <stringProp name="Hold">${__P(DURA,15)}</stringProp>
@@ -911,7 +911,7 @@
       <com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroup guiclass="com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroupGui" testclass="com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroup" testname="Payment" enabled="false">
         <elementProp name="ThreadGroup.main_controller" elementType="com.blazemeter.jmeter.control.VirtualUserController"/>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
-        <stringProp name="TargetLevel">${__P(USERS,8)}</stringProp>
+        <stringProp name="TargetLevel">${__P(USERS_PAYMENT,8)}</stringProp>
         <stringProp name="RampUp">${__P(RAMP,4)}</stringProp>
         <stringProp name="Steps">${__P(STEP,5)}</stringProp>
         <stringProp name="Hold">${__P(DURA,15)}</stringProp>
