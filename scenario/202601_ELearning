@@ -5,5 +5,8 @@
 ./execution.sh 2026_ELearning SMOKE_ELearning {ExecutionDate} 5 2 1 4
 
 
-
+# Execute with specified parameters for Streaming and Search course
+# - If multi user: Using '-DStream=10 -DSearch=10'
+# - If single user: Using OPT
+./executionCommand.sh 2026_ELearning SMOKE_ELearning {ExecutionDate} 5 2 1 4 '-DUSERS_STREAM=2 -DUSERS_SEARCH=1'
 

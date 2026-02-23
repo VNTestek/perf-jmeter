@@ -72,22 +72,11 @@
         <boolProp name="DNSCacheManager.isCustomResolver">false</boolProp>
       </DNSCacheManager>
       <hashTree/>
-      <AuthManager guiclass="AuthPanel" testclass="AuthManager" testname="HTTP Authorization Manager" enabled="false">
-        <collectionProp name="AuthManager.auth_list"/>
-        <boolProp name="AuthManager.controlledByThreadGroup">false</boolProp>
-      </AuthManager>
-      <hashTree/>
       <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true">
         <collectionProp name="CookieManager.cookies"/>
         <boolProp name="CookieManager.clearEachIteration">true</boolProp>
         <boolProp name="CookieManager.controlledByThreadGroup">false</boolProp>
       </CookieManager>
-      <hashTree/>
-      <CacheManager guiclass="CacheManagerGui" testclass="CacheManager" testname="HTTP Cache Manager" enabled="false">
-        <boolProp name="clearEachIteration">true</boolProp>
-        <boolProp name="useExpires">false</boolProp>
-        <boolProp name="CacheManager.controlledByThread">false</boolProp>
-      </CacheManager>
       <hashTree/>
       <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
@@ -555,10 +544,10 @@
       <com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroup guiclass="com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroupGui" testclass="com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroup" testname="Streaming" enabled="true">
         <elementProp name="ThreadGroup.main_controller" elementType="com.blazemeter.jmeter.control.VirtualUserController"/>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
-        <stringProp name="TargetLevel">${__P(USERS_STREAM,34)}</stringProp>
-        <stringProp name="RampUp">${__P(RAMP,4)}</stringProp>
-        <stringProp name="Steps">${__P(STEP,6)}</stringProp>
-        <stringProp name="Hold">${__P(DURA,15)}</stringProp>
+        <stringProp name="TargetLevel">${__P(USERS_STREAM,1)}</stringProp>
+        <stringProp name="RampUp">${__P(RAMP,1)}</stringProp>
+        <stringProp name="Steps">${__P(STEP,1)}</stringProp>
+        <stringProp name="Hold">${__P(DURA,1)}</stringProp>
         <stringProp name="LogFilename"></stringProp>
         <stringProp name="Iterations"></stringProp>
         <boolProp name="same_user_on_next_iteration">false</boolProp>
@@ -622,10 +611,10 @@
       <com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroup guiclass="com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroupGui" testclass="com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroup" testname="Search Course" enabled="true">
         <elementProp name="ThreadGroup.main_controller" elementType="com.blazemeter.jmeter.control.VirtualUserController"/>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
-        <stringProp name="TargetLevel">${__P(USERS_SEARCH,8)}</stringProp>
-        <stringProp name="RampUp">${__P(RAMP,4)}</stringProp>
-        <stringProp name="Steps">${__P(STEP,5)}</stringProp>
-        <stringProp name="Hold">${__P(DURA,15)}</stringProp>
+        <stringProp name="TargetLevel">${__P(USERS_SEARCH,1)}</stringProp>
+        <stringProp name="RampUp">${__P(RAMP,1)}</stringProp>
+        <stringProp name="Steps">${__P(STEP,1)}</stringProp>
+        <stringProp name="Hold">${__P(DURA,1)}</stringProp>
         <stringProp name="LogFilename"></stringProp>
         <stringProp name="Iterations"></stringProp>
         <boolProp name="same_user_on_next_iteration">false</boolProp>
@@ -700,7 +689,7 @@
               <elementProp name="password" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.name">password</stringProp>
-                <stringProp name="Argument.value">Admin@1234</stringProp>
+                <stringProp name="Argument.value">${password}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
               </elementProp>
@@ -714,7 +703,7 @@
               <elementProp name="username" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.name">username</stringProp>
-                <stringProp name="Argument.value">soilongbong21@gmail.com</stringProp>
+                <stringProp name="Argument.value">${account}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
               </elementProp>
@@ -758,6 +747,18 @@
               </elementProp>
             </collectionProp>
           </HeaderManager>
+          <hashTree/>
+          <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config" enabled="true">
+            <stringProp name="delimiter">,</stringProp>
+            <stringProp name="fileEncoding">UTF-8</stringProp>
+            <stringProp name="filename">./data/account.csv</stringProp>
+            <boolProp name="ignoreFirstLine">true</boolProp>
+            <boolProp name="quotedData">false</boolProp>
+            <boolProp name="recycle">true</boolProp>
+            <stringProp name="shareMode">shareMode.all</stringProp>
+            <boolProp name="stopThread">false</boolProp>
+            <stringProp name="variableNames">account,password</stringProp>
+          </CSVDataSet>
           <hashTree/>
         </hashTree>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Search course" enabled="true">
